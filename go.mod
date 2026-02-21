@@ -2,6 +2,8 @@ module github.com/michaelolof/gofi-test-utils
 
 go 1.25.0
 
+replace github.com/michaelolof/gofi => ../gofi
+
 require (
 	github.com/go-chi/chi/v5 v5.2.5
 	github.com/go-playground/validator/v10 v10.30.1
