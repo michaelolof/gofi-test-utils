@@ -24,6 +24,8 @@ github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWE
 github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
 github.com/michaelolof/gofi v0.6.0 h1:LF+u5R/JnupMFsDVCA9HPjNrqaxkthO5qkN6uF5G9JU=
 github.com/michaelolof/gofi v0.6.0/go.mod h1:rf6JpoXtLs5YlnZEdHLjMOgyXn2QoXM/wM41R/q4nPY=
+github.com/michaelolof/gofi v0.6.2 h1:VTENwB6zZZKbixfUBL9l1WMozXx3cy6syD7zoFWeKko=
+github.com/michaelolof/gofi v0.6.2/go.mod h1:rf6JpoXtLs5YlnZEdHLjMOgyXn2QoXM/wM41R/q4nPY=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu7U=
