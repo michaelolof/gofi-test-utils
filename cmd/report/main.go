@@ -443,8 +443,8 @@ func main() {
 	fmt.Println("🚀 Running benchmarks... (this may take 10-15 minutes)")
 	fmt.Println()
 
-	cmd := exec.Command("go", "test", "-bench=.", "-benchmem", "-count=3", "-timeout=20m")
-	cmd.Dir = findBenchDir()
+	cmd := exec.Command("go", "test", "./internal/benchmarks/", "-bench=.", "-benchmem", "-count=3", "-timeout=20m")
+	cmd.Dir = findProjectRoot()
 	cmd.Stderr = os.Stderr
 
 	output, err := cmd.Output()
@@ -460,7 +460,7 @@ func main() {
 	fmt.Printf("💾 Parsed %d memory measurements\n", len(data.Mems))
 	fmt.Println()
 
-	resultsPath := findBenchDir() + "/benchmark-results.md"
+	resultsPath := findProjectRoot() + "/benchmark-results.md"
 	f, err := os.Create(resultsPath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to create benchmark-results.md: %v\n", err)
@@ -472,14 +472,17 @@ func main() {
 	fmt.Printf("✅ Results written to %s\n", resultsPath)
 }
 
-func findBenchDir() string {
-	if _, err := os.Stat("bench_test.go"); err == nil {
+func findProjectRoot() string {
+	if _, err := os.Stat("internal/benchmarks/bench_test.go"); err == nil {
 		return "."
 	}
-	if _, err := os.Stat("../bench_test.go"); err == nil {
+	if _, err := os.Stat("../internal/benchmarks/bench_test.go"); err == nil {
 		return ".."
 	}
-	fmt.Fprintln(os.Stderr, "Error: cannot find bench_test.go. Run from the gofi-benchmarks directory.")
+	if _, err := os.Stat("../../internal/benchmarks/bench_test.go"); err == nil {
+		return "../.."
+	}
+	fmt.Fprintln(os.Stderr, "Error: cannot find internal/benchmarks/bench_test.go. Run from the gofi-benchmarks directory.")
 	os.Exit(1)
 	return ""
 }

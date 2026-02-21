@@ -21,7 +21,7 @@ EOF
 )
 
 # run the benchmarks
-bench=$(go test -bench=. -benchmem -count=3 2>&1)
+bench=$(go test ./internal/benchmarks/ -bench=. -benchmem -count=3 2>&1)
 
 # build markdown snippet
 cat <<EOF > /tmp/bench-results.md
