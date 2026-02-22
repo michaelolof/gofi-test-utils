@@ -32,6 +32,29 @@ For granular performance data, allocations, and specific use-case results, see t
 
 ---
 
+## Core Test Suites
+
+The [`internal/suites`](./internal/suites) package contains a comprehensive suite of tests that verify Gofi's core functionality and ensure cross-router consistency:
+
+- **Binding & Validation** — JSON, Form, and Multipart body parsing with schema validation.
+- **Routing & Middleware** — Parameterized routes, group-scoped handlers, and middleware chains.
+- **Data Handling** — Dependency injection, context storage, and custom response types.
+- **Error Handling** — Custom error responders and centralized validation failure handling.
+
+---
+
+## Usage Examples
+
+Explore practical implementations of Gofi in the [`cmd/examples`](./cmd/examples) directory:
+
+| Example | Description | Link |
+|---|---|---|
+| **JSON API** | High-performance JSON request/response handling. | [View](./cmd/examples/json) |
+| **Form Data** | Handling `application/x-www-form-urlencoded` payloads. | [View](./cmd/examples/formdata) |
+| **Multipart** | Managing single and multiple file uploads. | [View](./cmd/examples/multipart) |
+
+---
+
 ## Running Benchmarks
 
 ```bash
