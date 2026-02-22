@@ -19,7 +19,7 @@ func TestSchema_JSONBody_Struct(t *testing.T) {
 		Request struct {
 			Body struct {
 				Name string `json:"name" validate:"required"`
-				Age  int    `json:"age" validate:"required"`
+				Age  int    `json:"age" validate:"required,gt=0"`
 			} `validate:"required"`
 		}
 	}

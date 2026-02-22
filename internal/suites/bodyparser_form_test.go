@@ -342,3 +342,105 @@ func TestBodyParser_FormBody_FormValueEncode(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 200, rec.Code)
 }
+
+func TestBodyParser_FormBody_SendResponseOkNoHeader(t *testing.T) {
+	type bodySchema struct {
+		Request struct {
+			Header struct {
+				ContentType string `json:"Content-Type" default:"application/x-www-form-urlencoded"`
+			}
+			Body struct {
+				Name string `json:"name" validate:"required"`
+			} `validate:"required"`
+		}
+
+		Ok struct {
+			Body struct {
+				Message string `json:"message" validate:"required"`
+			}
+		}
+	}
+
+	handler := gofi.RouteOptions{
+		Schema: &bodySchema{},
+		Handler: func(c gofi.Context) error {
+			s, err := gofi.ValidateAndBind[bodySchema](c)
+			assert.Nil(t, err)
+			assert.Equal(t, "Alice", s.Request.Body.Name)
+
+			s.Ok.Body.Message = "ok"
+			return c.Send(200, s.Ok)
+		},
+	}
+
+	formData := url.Values{}
+	formData.Set("name", "Alice")
+	formData.Set("age", "30")
+
+	m := gofi.NewServeMux()
+	rec, err := m.Inject(gofi.InjectOptions{
+		Method: "POST",
+		Path:   "/users",
+		Headers: map[string]string{
+			"Content-Type": "application/x-www-form-urlencoded",
+		},
+		Body:    bytes.NewBufferString(formData.Encode()),
+		Handler: &handler,
+	})
+	assert.Nil(t, err)
+	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, "application/json", rec.Header().Get("Content-Type"))
+}
+
+func TestBodyParser_FormBody_SendResponseOkJSONHeader(t *testing.T) {
+	type bodySchema struct {
+		Request struct {
+			Header struct {
+				ContentType string `json:"Content-Type" default:"application/x-www-form-urlencoded"`
+			}
+			Body struct {
+				Name string `json:"name" validate:"required"`
+			} `validate:"required"`
+		}
+
+		Ok struct {
+			Header struct {
+				ContentType string `json:"Content-Type" default:"application/json"`
+			}
+			Body struct {
+				Message string `json:"message" validate:"required"`
+			}
+		}
+	}
+
+	handler := gofi.RouteOptions{
+		Schema: &bodySchema{},
+		Handler: func(c gofi.Context) error {
+			s, err := gofi.ValidateAndBind[bodySchema](c)
+			assert.Nil(t, err)
+			assert.Equal(t, "Alice", s.Request.Body.Name)
+
+			s.Ok.Body.Message = "ok"
+			return c.Send(200, s.Ok)
+		},
+	}
+
+	formData := url.Values{}
+	formData.Set("name", "Alice")
+	formData.Set("age", "30")
+
+	m := gofi.NewServeMux()
+	rec, err := m.Inject(gofi.InjectOptions{
+		Method: "POST",
+		Path:   "/users",
+		Headers: map[string]string{
+			"Content-Type": "application/x-www-form-urlencoded",
+		},
+		Body:    bytes.NewBufferString(formData.Encode()),
+		Handler: &handler,
+	})
+
+	assert.Nil(t, err)
+	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, "application/json", rec.Header().Get("Content-Type"))
+}
