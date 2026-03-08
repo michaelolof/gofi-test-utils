@@ -2,7 +2,7 @@ module github.com/michaelolof/gofi-test-utils
 
 go 1.25.0
 
-replace github.com/michaelolof/gofi => ../gofi
+// replace github.com/michaelolof/gofi => ../gofi
 
 require (
 	github.com/gin-gonic/gin v1.12.0
@@ -10,7 +10,7 @@ require (
 	github.com/go-playground/validator/v10 v10.30.1
 	github.com/gofiber/fiber/v2 v2.52.12
 	github.com/labstack/echo/v4 v4.15.0
-	github.com/michaelolof/gofi v0.6.5
+	github.com/michaelolof/gofi v0.7.0
 	github.com/stretchr/testify v1.11.1
 	github.com/valyala/fasthttp v1.69.0
 )
