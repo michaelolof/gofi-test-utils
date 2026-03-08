@@ -36,7 +36,7 @@ func TestSchema_PathBinding(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method: "GET",
 		Path:   "/items/{category}/{id}",
@@ -48,7 +48,7 @@ func TestSchema_PathBinding(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 }
 
 func TestSchema_PathParam_ValidationError(t *testing.T) {
@@ -70,7 +70,7 @@ func TestSchema_PathParam_ValidationError(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/items/{id}",
@@ -109,7 +109,7 @@ func TestSchema_QueryBinding(t *testing.T) {
 			},
 		}
 
-		m := gofi.NewServeMux()
+		m := gofi.NewRouter()
 		_, err := m.Inject(gofi.InjectOptions{
 			Method: "GET",
 			Path:   "/search",
@@ -134,7 +134,7 @@ func TestSchema_QueryBinding(t *testing.T) {
 			},
 		}
 
-		m := gofi.NewServeMux()
+		m := gofi.NewRouter()
 		_, err := m.Inject(gofi.InjectOptions{
 			Method:  "GET",
 			Path:    "/search",
@@ -172,7 +172,7 @@ func TestSchema_HeaderBinding(t *testing.T) {
 			},
 		}
 
-		m := gofi.NewServeMux()
+		m := gofi.NewRouter()
 		_, err := m.Inject(gofi.InjectOptions{
 			Method: "GET",
 			Path:   "/test",
@@ -197,7 +197,7 @@ func TestSchema_HeaderBinding(t *testing.T) {
 			},
 		}
 
-		m := gofi.NewServeMux()
+		m := gofi.NewRouter()
 		_, err := m.Inject(gofi.InjectOptions{
 			Method: "GET",
 			Path:   "/test",
@@ -220,7 +220,7 @@ func TestSchema_HeaderBinding(t *testing.T) {
 			},
 		}
 
-		m := gofi.NewServeMux()
+		m := gofi.NewRouter()
 		m.Inject(gofi.InjectOptions{
 			Method:  "GET",
 			Path:    "/test",
@@ -258,7 +258,7 @@ func TestSchema_CookieBinding(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method: "GET",
 		Path:   "/test",
@@ -269,7 +269,7 @@ func TestSchema_CookieBinding(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 }
 
 // =============================================================================
@@ -294,7 +294,7 @@ func TestSchema_ValidateOnly(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/items/{id}",
@@ -302,7 +302,7 @@ func TestSchema_ValidateOnly(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 }
 
 // =============================================================================
@@ -340,7 +340,7 @@ func TestSchema_CombinedBinding(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "POST",
 		Path:    "/items/{id}",
@@ -351,7 +351,7 @@ func TestSchema_CombinedBinding(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 }
 
 // =============================================================================
@@ -377,7 +377,7 @@ func TestSchema_EmptyValues_RequiredQueryString(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/search",
@@ -407,7 +407,7 @@ func TestSchema_EmptyValues_RequiredQueryInt_Zero(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/items",
@@ -437,7 +437,7 @@ func TestSchema_EmptyValues_RequiredHeader_EmptyString(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/test",
@@ -467,7 +467,7 @@ func TestSchema_EmptyValues_RequiredCookie_Missing(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/test",
@@ -497,7 +497,7 @@ func TestSchema_EmptyValues_RequiredBody_EmptyPayload(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	m.Inject(gofi.InjectOptions{
 		Method:  "POST",
 		Path:    "/users",
@@ -535,14 +535,14 @@ func TestSchema_EmptyValues_OptionalQuery_ZeroValues(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/items",
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 }
 
 func TestSchema_EmptyValues_OptionalHeader_Missing(t *testing.T) {
@@ -566,7 +566,7 @@ func TestSchema_EmptyValues_OptionalHeader_Missing(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/test",
@@ -574,7 +574,7 @@ func TestSchema_EmptyValues_OptionalHeader_Missing(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 }
 
 func TestSchema_EmptyValues_OptionalBody_NilPayload(t *testing.T) {
@@ -596,14 +596,14 @@ func TestSchema_EmptyValues_OptionalBody_NilPayload(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "POST",
 		Path:    "/users",
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 }
 
 // NOTE: Sending an empty JSON array `[]` as an optional body causes a panic
@@ -625,7 +625,7 @@ func TestSchema_EmptyValues_OptionalBody_EmptyArray(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "POST",
 		Path:    "/tags",
@@ -633,5 +633,5 @@ func TestSchema_EmptyValues_OptionalBody_EmptyArray(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 }

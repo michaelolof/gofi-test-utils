@@ -69,7 +69,7 @@ func TestCustomSpec_RequestDecode(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	m.RegisterSpec(&currencySpec{})
 
 	rec, err := m.Inject(gofi.InjectOptions{
@@ -81,7 +81,7 @@ func TestCustomSpec_RequestDecode(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 }
 
 // =============================================================================
@@ -109,7 +109,7 @@ func TestCustomSpec_ResponseEncode(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	m.RegisterSpec(&currencySpec{})
 
 	rec, err := m.Inject(gofi.InjectOptions{
@@ -118,7 +118,7 @@ func TestCustomSpec_ResponseEncode(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, "$42.50", rec.Header().Get("X-Price"))
+	assert.Equal(t, "$42.50", rec.HeaderMap.Get("X-Price"))
 }
 
 // =============================================================================

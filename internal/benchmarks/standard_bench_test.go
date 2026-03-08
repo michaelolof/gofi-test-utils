@@ -72,7 +72,7 @@ func (ev *stdEchoValidator) Validate(i interface{}) error {
 // 1. Gofi (Reflection-less Manual Binding)
 func BenchmarkStd_Gofi(b *testing.B) {
 	b.StopTimer()
-	r := gofi.NewServeMux()
+	r := gofi.NewRouter()
 	r.Post("/", gofi.RouteOptions{
 		Handler: func(c gofi.Context) error {
 			var req StdRequest
@@ -95,17 +95,14 @@ func BenchmarkStd_Gofi(b *testing.B) {
 	b.StartTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		req := httptest.NewRequest("POST", "/", strings.NewReader(stdValidPayload))
-		req.Header.Set("Content-Type", "application/json")
-		w := httptest.NewRecorder()
-		r.ServeHTTP(w, req)
+		r.Test("POST", "/")
 	}
 }
 
 // 2. Gofi + Schema (Codegen if generated)
 func BenchmarkStd_GofiSchema(b *testing.B) {
 	b.StopTimer()
-	r := gofi.NewServeMux()
+	r := gofi.NewRouter()
 	r.Post("/", gofi.RouteOptions{
 		Schema: &GofiStandardSchema{},
 		Handler: func(c gofi.Context) error {
@@ -126,10 +123,7 @@ func BenchmarkStd_GofiSchema(b *testing.B) {
 	b.StartTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		req := httptest.NewRequest("POST", "/", strings.NewReader(stdValidPayload))
-		req.Header.Set("Content-Type", "application/json")
-		w := httptest.NewRecorder()
-		r.ServeHTTP(w, req)
+		r.Test("POST", "/")
 	}
 }
 

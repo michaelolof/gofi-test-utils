@@ -25,7 +25,7 @@ func TestValidation_Comparison(t *testing.T) {
 		}
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 
 	tests := []struct {
 		name       string
@@ -117,7 +117,7 @@ func TestValidation_Comparison(t *testing.T) {
 			})
 
 			assert.Nil(t, err)
-			assert.Equal(t, tt.expectCode, rec.Code, tt.name)
+			assert.Equal(t, tt.expectCode, rec.StatusCode, tt.name)
 		})
 	}
 }

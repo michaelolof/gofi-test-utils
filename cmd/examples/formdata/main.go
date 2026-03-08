@@ -15,7 +15,7 @@ import (
 const PORT string = "688001"
 
 func main() {
-	r := gofi.NewServeMux()
+	r := gofi.NewRouter()
 
 	type userFormSchema struct {
 		Request struct {
@@ -70,7 +70,7 @@ func main() {
 	}()
 
 	log.Printf("Server listening on :%s\n", PORT)
-	if err := http.ListenAndServe(fmt.Sprintf(":%s", PORT), r); err != nil {
+	if err := r.Listen(fmt.Sprintf(":%s", PORT)); err != nil {
 		log.Fatal(err)
 	}
 }

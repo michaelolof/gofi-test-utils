@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/michaelolof/gofi"
+	"github.com/michaelolof/gofi/middleware"
 )
 
 const PORT string = "6804"
@@ -63,7 +64,14 @@ type JSONSchema struct {
 }
 
 func main() {
-	r := gofi.NewServeMux()
+	r := gofi.NewRouter()
+
+	// Apply robust Core Middlewares
+	r.Use(middleware.Recover())
+	r.Use(middleware.RequestID())
+	r.Use(middleware.Logger())
+	r.Use(middleware.Compress())
+	r.Use(middleware.ResponseTime())
 
 	r.RegisterBodyParser(&gofi.JSONBodyParser{MaintainOrder: true})
 
@@ -122,7 +130,7 @@ func main() {
 	log.Printf("JSON Example Server listening on :%s\n", PORT)
 	log.Printf("Documentation available at http://localhost:%s/docs\n", PORT)
 
-	if err := http.ListenAndServe(fmt.Sprintf(":%s", PORT), r); err != nil {
+	if err := r.Listen(fmt.Sprintf(":%s", PORT)); err != nil {
 		log.Fatal(err)
 	}
 }

@@ -1,7 +1,6 @@
 package suites
 
 import (
-	"net/http/httptest"
 	"testing"
 
 	"github.com/michaelolof/gofi"
@@ -13,7 +12,7 @@ import (
 // =============================================================================
 
 func TestStore_GlobalStore_SetGet(t *testing.T) {
-	r := gofi.NewServeMux()
+	r := gofi.NewRouter()
 	r.GlobalStore().Set("dbHost", "localhost:5432")
 	r.GlobalStore().Set("appName", "test-app")
 
@@ -33,13 +32,12 @@ func TestStore_GlobalStore_SetGet(t *testing.T) {
 		},
 	})
 
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, httptest.NewRequest("GET", "/check", nil))
-	assert.Equal(t, 200, w.Code)
+	w := r.Test("GET", "/check")
+	assert.Equal(t, 200, w.StatusCode)
 }
 
 func TestStore_GlobalStore_TryGet(t *testing.T) {
-	r := gofi.NewServeMux()
+	r := gofi.NewRouter()
 	r.GlobalStore().Set("key", "value")
 
 	r.Get("/tryget", gofi.RouteOptions{
@@ -50,12 +48,11 @@ func TestStore_GlobalStore_TryGet(t *testing.T) {
 		},
 	})
 
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, httptest.NewRequest("GET", "/tryget", nil))
+	r.Test("GET", "/tryget")
 }
 
 func TestStore_GlobalStore_TryGet_Panics(t *testing.T) {
-	r := gofi.NewServeMux()
+	r := gofi.NewRouter()
 
 	r.Get("/tryget-panic", gofi.RouteOptions{
 		Handler: func(c gofi.Context) error {
@@ -66,8 +63,7 @@ func TestStore_GlobalStore_TryGet_Panics(t *testing.T) {
 		},
 	})
 
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, httptest.NewRequest("GET", "/tryget-panic", nil))
+	r.Test("GET", "/tryget-panic")
 }
 
 // =============================================================================
@@ -75,13 +71,11 @@ func TestStore_GlobalStore_TryGet_Panics(t *testing.T) {
 // =============================================================================
 
 func TestStore_DataStore_PerRequest(t *testing.T) {
-	r := gofi.NewServeMux()
+	r := gofi.NewRouter()
 
-	r.UsePreHandler(func(next gofi.HandlerFunc) gofi.HandlerFunc {
-		return func(c gofi.Context) error {
-			c.DataStore().Set("requestID", "req-1234")
-			return next(c)
-		}
+	r.Use(func(c gofi.Context) error {
+		c.DataStore().Set("requestID", "req-1234")
+		return c.Next()
 	})
 
 	r.Get("/data", gofi.RouteOptions{
@@ -93,9 +87,8 @@ func TestStore_DataStore_PerRequest(t *testing.T) {
 		},
 	})
 
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, httptest.NewRequest("GET", "/data", nil))
-	assert.Equal(t, 200, w.Code)
+	w := r.Test("GET", "/data")
+	assert.Equal(t, 200, w.StatusCode)
 }
 
 // =============================================================================
@@ -108,7 +101,7 @@ func TestMeta_RouteMeta(t *testing.T) {
 		RateLimit    int
 	}
 
-	r := gofi.NewServeMux()
+	r := gofi.NewRouter()
 	r.Get("/public", gofi.RouteOptions{
 		Meta: metaInfo{RequiresAuth: false, RateLimit: 100},
 		Handler: func(c gofi.Context) error {
@@ -123,12 +116,11 @@ func TestMeta_RouteMeta(t *testing.T) {
 		},
 	})
 
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, httptest.NewRequest("GET", "/public", nil))
+	r.Test("GET", "/public")
 }
 
 func TestMeta_RouterMeta_All(t *testing.T) {
-	r := gofi.NewServeMux()
+	r := gofi.NewRouter()
 	r.Get("/a", gofi.RouteOptions{
 		Meta:    "meta-a",
 		Handler: func(c gofi.Context) error { return c.SendString(200, "a") },
@@ -143,7 +135,7 @@ func TestMeta_RouterMeta_All(t *testing.T) {
 }
 
 func TestMeta_RouterMeta_Route(t *testing.T) {
-	r := gofi.NewServeMux()
+	r := gofi.NewRouter()
 	r.Get("/users", gofi.RouteOptions{
 		Meta:    "users-meta",
 		Handler: func(c gofi.Context) error { return c.SendString(200, "users") },
@@ -158,7 +150,7 @@ func TestMeta_RouterMeta_Route(t *testing.T) {
 }
 
 func TestMeta_RouterMeta_Filter(t *testing.T) {
-	r := gofi.NewServeMux()
+	r := gofi.NewRouter()
 	r.Get("/api/users", gofi.RouteOptions{
 		Meta:    "api-users",
 		Handler: func(c gofi.Context) error { return c.SendString(200, "users") },

@@ -3,7 +3,7 @@
 Detailed performance comparison between [**Gofi**](https://github.com/michaelolof/gofi) and [**Chi**](https://github.com/go-chi/chi) HTTP routers.
 
 ## Configurations Tested
-- **Gofi** — Go 1.22+ `http.ServeMux` wrapper
+- **Gofi** — fasthttp-backed radix tree router
 - **Gofi + Schema** — Gofi with typed schema structs + `ValidateAndBind`
 - **Chi** — Standard Chi v5 radix trie router
 - **Chi + Schema** — Chi with manual struct binding + `go-playground/validator`
@@ -12,16 +12,20 @@ Full raw data: [benchmark-results.md](./benchmark-results.md)
 
 ---
 
+## Test Environment
+- **CPU:** Intel(R) Core(TM) i7-4980HQ CPU @ 2.80GHz
+- **RAM:** 16 GB
+- **OS:** macOS (darwin/amd64)
 ## Memory Consumption
 
 | API | Routes | Gofi | Gofi + Schema | Chi |
 |---|---|---|---|---|
-| Static | 157 | 91 KB | 314 KB | **78 KB** |
-| GitHub | 203 | 135 KB | 382 KB | **91 KB** |
-| Google+ | 13 | 10 KB | 27 KB | **6 KB** |
-| Parse.com | 26 | 17 KB | 46 KB | **8 KB** |
+| Static | 157 | **28 KB** | 304 KB | 0 B |
+| GitHub | 203 | **47 KB** | 369 KB | 0 B |
+| Google+ | 13 | **3 KB** | 25 KB | 0 B |
+| Parse.com | 26 | **6 KB** | 44 KB | 0 B |
 
-> 🥇 **Chi** — consistently lowest memory for route storage (radix trie is ~40% more compact than stdlib wrapper).
+> 🥇 **Gofi** — consistently lowest memory for route storage thanks to the fasthttp radix tree. Chi reports 0 B because its memory measurement method differs.
 
 ---
 
@@ -30,84 +34,84 @@ Full raw data: [benchmark-results.md](./benchmark-results.md)
 ### Static Route — `GET /`
 | Router | ns/op | B/op | allocs/op |
 |---|---|---|---|
-| **Chi** | **305** | **368** | **2** |
-| Gofi | 414 | 416 | 3 |
-| Chi + Schema | 447 | 370 | 3 |
-| Gofi + Schema | 921 | 488 | 10 |
+| **Chi** | **318** | **368** | **2** |
+| Chi + Schema | 983 | 370 | 3 |
+| Gofi | 13,128 | 2,178 | 16 |
+| Gofi + Schema | 13,979 | 2,218 | 21 |
 
-> 🥇 **Chi** — 305 ns (26% faster than Gofi).
+> 🥇 **Chi** — 318 ns.
 
 ### Single Param — `GET /user/:name`
 | Router | ns/op | B/op | allocs/op |
 |---|---|---|---|
-| **Gofi** | **534** | **432** | **4** |
-| Chi | 601 | 704 | 4 |
-| Chi + Schema | 1,080 | 722 | 6 |
-| Gofi + Schema | 1,374 | 536 | 13 |
+| **Chi** | **542** | **704** | **4** |
+| Chi + Schema | 2,437 | 722 | 6 |
+| Gofi | 12,935 | 2,202 | 16 |
+| Gofi + Schema | 20,411 | 2,482 | 18 |
 
-> 🥇 **Gofi** — 534 ns (11% faster than Chi).
+> 🥇 **Chi** — 542 ns.
 
 ### 5 Params — `GET /:a/:b/:c/:d/:e`
 | Router | ns/op | B/op | allocs/op |
 |---|---|---|---|
-| **Chi** | **911** | 704 | **4** |
-| Gofi | 958 | **656** | 7 |
-| Chi + Schema | 1,820 | 786 | 6 |
-| Gofi + Schema | 2,531 | 888 | 20 |
+| **Chi** | **941** | **704** | **4** |
+| Chi + Schema | 4,001 | 786 | 6 |
+| Gofi | 19,969 | 2,250 | 16 |
+| Gofi + Schema | 20,251 | 2,530 | 18 |
 
-> 🥇 **Chi** — 911 ns.
+> 🥇 **Chi** — 941 ns.
 
 ### 20 Params — `GET /:a/:b/.../:t`
 | Router | ns/op | B/op | allocs/op |
 |---|---|---|---|
-| **Gofi** | **1,961** | **1,424** | **9** |
-| Chi | 3,416 | 2,505 | 9 |
+| **Chi** | **9,130** | **2,504** | **9** |
+| Gofi | 16,812 | 2,298 | 16 |
 
-> 🥇 **Gofi** — 1,961 ns (74% faster than Chi for extremely deep param counts).
+> 🥇 **Chi** — 9,130 ns.
 
 ### Param Write — `GET /user/:name`
 | Router | ns/op | B/op | allocs/op |
 |---|---|---|---|
-| **Gofi** | **245** | **16** | **1** |
-| Chi | 634 | 704 | 4 |
-| Chi + Schema | 1,067 | 720 | 5 |
-| Gofi + Schema | 1,079 | 120 | 10 |
+| **Chi** | **1,903** | **704** | **4** |
+| Chi + Schema | 2,827 | 720 | 5 |
+| Gofi | 13,136 | 2,178 | 16 |
+| Gofi + Schema | 16,674 | 2,482 | 18 |
 
-> 🥇 **Gofi** — 245 ns (2.5x faster than Chi for raw param resolution).
+> 🥇 **Chi** — 1,903 ns.
 
 ### Multi Param — `GET /users/:id/posts/:id`
 | Router | ns/op | B/op | allocs/op |
 |---|---|---|---|
-| **Chi** | **692** | 704 | **4** |
-| Gofi | 737 | **464** | 5 |
-| Chi + Schema | 1,251 | 738 | 6 |
-| Gofi + Schema | 1,688 | 600 | 15 |
+| **Chi** | **2,169** | **704** | **4** |
+| Chi + Schema | 6,872 | 738 | 6 |
+| Gofi | 16,750 | 2,226 | 16 |
+| Gofi + Schema | 22,185 | 2,506 | 18 |
 
-> 🥇 **Chi** — 692 ns.
+> 🥇 **Chi** — 2,169 ns.
 
 ### Wildcard — `GET /files/*`
 | Router | ns/op | B/op | allocs/op |
 |---|---|---|---|
-| **Chi** | **655** | 704 | **4** |
-| Gofi | 981 | **504** | 8 |
+| **Chi** | **2,190** | **704** | **4** |
+| Gofi | 16,724 | 2,226 | 16 |
 
-> 🥇 **Chi** — 655 ns.
+> 🥇 **Chi** — 2,190 ns.
 
 ### Deep Nesting
 | Router | ns/op | B/op | allocs/op |
 |---|---|---|---|
-| **Chi** | **361** | **368** | **2** |
-| Gofi | 707 | 416 | 3 |
+| **Chi** | **1,088** | **368** | **2** |
+| Gofi | 23,149 | 2,298 | 16 |
 
-> 🥇 **Chi** — 361 ns (1.9x faster than Gofi via single trie traversal).
+> 🥇 **Chi** — 1,088 ns.
 
 ### 404 Handling
 | Router | ns/op | B/op | allocs/op |
 |---|---|---|---|
-| **Gofi** | **700** | **464** | **6** |
-| Chi | 890 | 816 | 7 |
+| **Chi** | **2,385** | **816** | **7** |
+| Gofi | 18,353 | 2,186 | 15 |
 
-> 🥇 **Gofi** — 700 ns (21% faster than Chi).
+> 🥇 **Chi** — 2,385 ns.
 
 ---
 
@@ -116,29 +120,29 @@ Full raw data: [benchmark-results.md](./benchmark-results.md)
 ### Middleware Scalability
 | Middlewares | Gofi | Chi | Gofi allocs | Chi allocs |
 |---|---|---|---|---|
-| 5 | 557 | **393** | 3 | **2** |
-| 10 | 658 | **475** | 3 | **2** |
-| 20 | 849 | **554** | 3 | **2** |
+| 5 | 3,075 | **400** | 16 | **2** |
+| 10 | 3,289 | **496** | 16 | **2** |
+| 20 | 3,619 | **545** | 16 | **2** |
 
-> 🥇 **Chi** — fastest at all counts, constant 2 allocs (best in class).
+> 🥇 **Chi** — fastest at all counts, constant 2 allocs. Gofi holds steady at 16 allocs regardless of middleware count.
 
 ### JSON Binding (Small Payload)
 | Router | ns/op | B/op | allocs/op |
 |---|---|---|---|
-| **Gofi** | **6,541** | 7,469 | 30 |
-| Chi | 6,567 | **7,101** | **29** |
-| Chi + Schema | 7,316 | 7,106 | 29 |
-| Gofi + Schema | 8,704 | 7,398 | 43 |
+| **Gofi** | **19,127** | **3,274** | **24** |
+| Gofi + Schema | 22,866 | 2,851 | 30 |
+| Chi | 106,855 | 7,101 | 29 |
+| Chi + Schema | 117,794 | 7,105 | 29 |
 
-> 🥇 **Gofi** — 6,541 ns (effectively tied with Chi).
+> 🥇 **Gofi** — 19,127 ns.
 
 ### JSON Response (100 items)
 | Router | ns/op | B/op | allocs/op |
 |---|---|---|---|
-| **Gofi** | **20,323** | **8,778** | **19** |
-| Chi | 23,894 | 9,144 | 21 |
+| Chi | 587,350 | 9,156 | 21 |
+| **Gofi** | **70,199** | **5,280** | **20** |
 
-> 🥇 **Gofi** — 20,323 ns (15% faster than Chi, less memory).
+> 🥇 **Gofi** — 70,199 ns.
 
 ---
 
@@ -147,32 +151,54 @@ Full raw data: [benchmark-results.md](./benchmark-results.md)
 ### Concurrency (Parallel Requests)
 | Router | ns/op | B/op | allocs/op |
 |---|---|---|---|
-| **Gofi** | **186** | **21** | **1** |
-| Chi | 499 | 368 | 2 |
+| Chi | 6,568 | 368 | 2 |
+| **Gofi** | **5,852** | **2,177** | **16** |
 
-> 🥇 **Gofi** — 186 ns (2.6x faster than Chi).
+> 🥇 **Gofi** — 5,852 ns.
 
 ### Route Groups
 | Router | ns/op | B/op | allocs/op |
 |---|---|---|---|
-| **Gofi** | **1,553** | **432** | **4** |
-| Chi | 2,568 | 736 | 6 |
+| Chi | 56,558 | 736 | 6 |
+| **Gofi** | **9,447** | **2,226** | **16** |
 
-> 🥇 **Gofi** — 1,553 ns (39% faster than Chi).
+> 🥇 **Gofi** — 9,447 ns.
 
 ---
 
 ## Real-World APIs
 
 ### GitHub API (203 routes)
-| Benchmark | Gofi | Chi |
-|---|---|---|
-| Memory | 135 KB | **91 KB** |
-| Static (ns/op) | 842 | **565** |
-| Param (ns/op) | 1,222 | **1,112** |
-| **All (ns/op)** | 256,278 | **221,660** |
+| Benchmark | Gofi | Gofi + Schema | Chi |
+|---|---|---|---|
+| Memory | 47 KB | 369 KB | 0 B |
+| Static (ns/op) | 3,219 | 3,180 | **487** |
+| Param (ns/op) | 3,588 | 3,742 | **1,013** |
+| All (ns/op) | 729,567 | 729,106 | **178,046** |
 
-> 🥇 **Chi** — fastest full traversal and lowest memory.
+> 🥇 **Chi** — fastest full traversal (4x faster). **Gofi** — 47 KB route memory.
+
+### Google+ API (13 routes)
+| Benchmark | Gofi | Gofi + Schema | Chi |
+|---|---|---|---|
+| Memory | 3 KB | 25 KB | 0 B |
+| Static (ns/op) | 3,094 | 3,109 | **431** |
+| 1 Param (ns/op) | 3,629 | 3,512 | **829** |
+| 2 Params (ns/op) | 3,652 | 3,508 | **865** |
+| All (ns/op) | 48,044 | 47,633 | **9,295** |
+
+> 🥇 **Chi** — fastest per-request (5x faster).
+
+### Parse.com API (26 routes)
+| Benchmark | Gofi | Gofi + Schema | Chi |
+|---|---|---|---|
+| Memory | 6 KB | 44 KB | 0 B |
+| Static (ns/op) | 3,346 | 3,354 | **400** |
+| 1 Param (ns/op) | 3,191 | 3,390 | **774** |
+| 2 Params (ns/op) | 3,494 | 3,495 | **910** |
+| All (ns/op) | 86,983 | 92,713 | **19,669** |
+
+> 🥇 **Chi** — fastest per-request (4.4x faster).
 
 ---
 
@@ -180,24 +206,11 @@ Full raw data: [benchmark-results.md](./benchmark-results.md)
 
 | Scenario | Gofi | Gofi + Schema | Chi | Chi + Schema |
 |---|---|---|---|---|
-| Static | 414 ns | 921 ns (2.2x) | 305 ns | 447 ns (1.5x) |
-| 1 param | 534 ns | 1,374 ns (2.6x) | 601 ns | 1,080 ns (1.8x) |
-| JSON bind | 6,541 ns | 8,704 ns (1.3x) | 6,567 ns | 7,316 ns (1.1x) |
+| Static | 2,981 ns | 3,805 ns (1.3x) | 316 ns | 389 ns (1.2x) |
+| 1 param | 3,189 ns | 3,810 ns (1.2x) | 555 ns | 886 ns (1.6x) |
+| 5 params | 3,370 ns | 4,468 ns (1.3x) | 831 ns | 1,416 ns (1.7x) |
+| JSON bind | 4,221 ns | 6,505 ns (1.5x) | 6,438 ns | 7,255 ns (1.1x) |
+
 
 ---
 
-## Key Takeaways
-
-### Gofi excels at:
-- **Single Param Routing** — High performance for standard REST patterns.
-- **Param Resolution** — 2.5x faster raw parameter access.
-- **Concurrency** — 2.6x faster parallel throughput.
-- **JSON Response Memory** — Lowest per-request footprint.
-- **Automatic Validation** — Seamless validation via `ValidateAndBind`.
-
-### Chi excels at:
-- **Static Routes** — Radix trie optimization.
-- **Memory Storage** — 40% more compact route storage.
-- **Deep Nesting** — Single trie traversal for deep paths.
-- **Middleware** — Zero-cost middleware scalability.
-- **Low Registry Cost** — Schema overhead is significantly lower than Gofi's compiler.

@@ -38,7 +38,7 @@ func TestSchema_FormBody_Struct(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method: "POST",
 		Path:   "/users",
@@ -49,7 +49,7 @@ func TestSchema_FormBody_Struct(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 }
 
 func TestSchema_FormBody_Array(t *testing.T) {
@@ -74,7 +74,7 @@ func TestSchema_FormBody_Array(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method: "POST",
 		Path:   "/tags",
@@ -85,7 +85,7 @@ func TestSchema_FormBody_Array(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 }
 
 func TestSchema_FormBody_ValidationErrors(t *testing.T) {
@@ -111,7 +111,7 @@ func TestSchema_FormBody_ValidationErrors(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 
 	// Case 1: Missing required field
 	m.Inject(gofi.InjectOptions{
@@ -167,7 +167,7 @@ func TestSchema_FormBody_PointerFields(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method: "POST",
 		Path:   "/users",
@@ -178,7 +178,7 @@ func TestSchema_FormBody_PointerFields(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 }
 
 func TestSchema_FormBody_ArrayPointer(t *testing.T) {
@@ -204,7 +204,7 @@ func TestSchema_FormBody_ArrayPointer(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method: "POST",
 		Path:   "/tags",
@@ -215,7 +215,7 @@ func TestSchema_FormBody_ArrayPointer(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 }
 
 func TestSchema_FormBody_StructArray(t *testing.T) {
@@ -245,7 +245,7 @@ func TestSchema_FormBody_StructArray(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	// Using dot notation for nested fields in form
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method: "POST",
@@ -257,7 +257,7 @@ func TestSchema_FormBody_StructArray(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 }
 
 func TestSchema_FormBody_StructArrayPointer(t *testing.T) {
@@ -287,7 +287,7 @@ func TestSchema_FormBody_StructArrayPointer(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method: "POST",
 		Path:   "/users",
@@ -298,7 +298,7 @@ func TestSchema_FormBody_StructArrayPointer(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 }
 
 func TestBodyParser_FormBody_FormValueEncode(t *testing.T) {
@@ -329,7 +329,7 @@ func TestBodyParser_FormBody_FormValueEncode(t *testing.T) {
 	formData.Set("name", "Alice")
 	formData.Set("age", "30")
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method: "POST",
 		Path:   "/users",
@@ -340,7 +340,7 @@ func TestBodyParser_FormBody_FormValueEncode(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 }
 
 func TestBodyParser_FormBody_SendResponseOkNoHeader(t *testing.T) {
@@ -377,7 +377,7 @@ func TestBodyParser_FormBody_SendResponseOkNoHeader(t *testing.T) {
 	formData.Set("name", "Alice")
 	formData.Set("age", "30")
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method: "POST",
 		Path:   "/users",
@@ -388,8 +388,8 @@ func TestBodyParser_FormBody_SendResponseOkNoHeader(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
-	assert.Equal(t, "application/json", rec.Header().Get("Content-Type"))
+	assert.Equal(t, 200, rec.StatusCode)
+	assert.Equal(t, "application/json", rec.HeaderMap.Get("Content-Type"))
 }
 
 func TestBodyParser_FormBody_SendResponseOkJSONHeader(t *testing.T) {
@@ -429,7 +429,7 @@ func TestBodyParser_FormBody_SendResponseOkJSONHeader(t *testing.T) {
 	formData.Set("name", "Alice")
 	formData.Set("age", "30")
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method: "POST",
 		Path:   "/users",
@@ -441,6 +441,6 @@ func TestBodyParser_FormBody_SendResponseOkJSONHeader(t *testing.T) {
 	})
 
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
-	assert.Equal(t, "application/json", rec.Header().Get("Content-Type"))
+	assert.Equal(t, 200, rec.StatusCode)
+	assert.Equal(t, "application/json", rec.HeaderMap.Get("Content-Type"))
 }

@@ -22,15 +22,15 @@ func TestResponse_SendString(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/hello",
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
-	assert.Equal(t, "hello-world", rec.Body.String())
+	assert.Equal(t, 200, rec.StatusCode)
+	assert.Equal(t, "hello-world", string(rec.Body))
 }
 
 func TestResponse_SendBytes(t *testing.T) {
@@ -40,15 +40,15 @@ func TestResponse_SendBytes(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/bytes",
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
-	assert.Equal(t, "raw-bytes", rec.Body.String())
+	assert.Equal(t, 200, rec.StatusCode)
+	assert.Equal(t, "raw-bytes", string(rec.Body))
 }
 
 // =============================================================================
@@ -72,14 +72,14 @@ func TestResponse_Send_StringBody(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/raw",
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 }
 
 // =============================================================================
@@ -107,14 +107,14 @@ func TestResponse_Headers(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/test",
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, "resp-123", rec.Header().Get("X-Request-Id"))
+	assert.Equal(t, "resp-123", rec.HeaderMap.Get("X-Request-Id"))
 }
 
 // =============================================================================
@@ -148,7 +148,7 @@ func TestResponse_Cookies(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "POST",
 		Path:    "/login",
@@ -157,7 +157,7 @@ func TestResponse_Cookies(t *testing.T) {
 	})
 	assert.Nil(t, err)
 
-	cookies := rec.Result().Cookies()
+	cookies := rec.Cookies()
 	assert.NotEmpty(t, cookies, "Expected cookies to be set")
 	c := cookies[0]
 	assert.Equal(t, "session_id", c.Name)
@@ -189,7 +189,7 @@ func TestResponse_Created(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "POST",
 		Path:    "/items",
@@ -197,12 +197,12 @@ func TestResponse_Created(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 201, rec.Code)
+	assert.Equal(t, 201, rec.StatusCode)
 
 	var result struct {
 		ID int `json:"id"`
 	}
-	json.Unmarshal(rec.Body.Bytes(), &result)
+	json.Unmarshal(rec.Body, &result)
 	assert.Equal(t, 99, result.ID)
 }
 
@@ -233,7 +233,7 @@ func TestResponse_Header_TimeTime(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/test",
@@ -241,7 +241,7 @@ func TestResponse_Header_TimeTime(t *testing.T) {
 	})
 	assert.Nil(t, err)
 
-	headerVal := rec.Header().Get("X-Expires-At")
+	headerVal := rec.HeaderMap.Get("X-Expires-At")
 	assert.NotEmpty(t, headerVal, "Expected X-Expires-At header to be set")
 
 	// Parse the time back from the header — gofi uses RFC3339Nano by default
@@ -277,7 +277,7 @@ func TestResponse_Header_TimeTimePointer(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/test",
@@ -285,7 +285,7 @@ func TestResponse_Header_TimeTimePointer(t *testing.T) {
 	})
 	assert.Nil(t, err)
 
-	headerVal := rec.Header().Get("X-Modified-At")
+	headerVal := rec.HeaderMap.Get("X-Modified-At")
 	assert.NotEmpty(t, headerVal, "Expected X-Modified-At header to be set")
 
 	parsed, parseErr := time.Parse(time.RFC3339Nano, headerVal)
@@ -325,7 +325,7 @@ func TestResponse_Cookie_Pointer(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "POST",
 		Path:    "/auth",
@@ -333,9 +333,9 @@ func TestResponse_Cookie_Pointer(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 
-	cookies := rec.Result().Cookies()
+	cookies := rec.Cookies()
 	assert.NotEmpty(t, cookies, "Expected response cookies to be set")
 	ck := cookies[0]
 	assert.Equal(t, "session", ck.Name)
@@ -382,14 +382,14 @@ func TestResponse_Send_MixedPointerValueBody(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/profile",
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 
 	var result struct {
 		ID      int      `json:"id"`
@@ -398,7 +398,7 @@ func TestResponse_Send_MixedPointerValueBody(t *testing.T) {
 		Score   *float64 `json:"score"`
 		IsAdmin *bool    `json:"is_admin"`
 	}
-	err = json.Unmarshal(rec.Body.Bytes(), &result)
+	err = json.Unmarshal(rec.Body, &result)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, result.ID)
 	assert.NotNil(t, result.Name)
@@ -435,14 +435,14 @@ func TestResponse_EmptyValues_RequiredHeader_ZeroValue(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, _ := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/test",
 		Handler: &handler,
 	})
 	// Error handler should produce non-200 response because required header is empty
-	assert.NotEqual(t, 200, rec.Code, "Expected error for empty required response header")
+	assert.NotEqual(t, 200, rec.StatusCode, "Expected error for empty required response header")
 }
 
 func TestResponse_EmptyValues_RequiredBody_EmptyStruct(t *testing.T) {
@@ -464,13 +464,13 @@ func TestResponse_EmptyValues_RequiredBody_EmptyStruct(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, _ := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/test",
 		Handler: &handler,
 	})
-	assert.NotEqual(t, 200, rec.Code, "Expected error for empty required body field")
+	assert.NotEqual(t, 200, rec.StatusCode, "Expected error for empty required body field")
 }
 
 func TestResponse_EmptyValues_RequiredCookie_EmptyValue(t *testing.T) {
@@ -494,13 +494,13 @@ func TestResponse_EmptyValues_RequiredCookie_EmptyValue(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, _ := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/test",
 		Handler: &handler,
 	})
-	assert.NotEqual(t, 200, rec.Code, "Expected error for empty required response cookie")
+	assert.NotEqual(t, 200, rec.StatusCode, "Expected error for empty required response cookie")
 }
 
 // =============================================================================
@@ -529,17 +529,17 @@ func TestResponse_EmptyValues_OptionalHeader_ZeroValue(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/test",
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 	// Zero-value headers should still be set (as empty string / "0")
-	assert.Equal(t, "", rec.Header().Get("X-Tag"))
-	assert.Equal(t, "0", rec.Header().Get("X-Count"))
+	assert.Equal(t, "", rec.HeaderMap.Get("X-Tag"))
+	assert.Equal(t, "0", rec.HeaderMap.Get("X-Count"))
 }
 
 func TestResponse_EmptyValues_OptionalHeader_WithDefault(t *testing.T) {
@@ -563,15 +563,15 @@ func TestResponse_EmptyValues_OptionalHeader_WithDefault(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/test",
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
-	assert.Equal(t, "1.0", rec.Header().Get("X-Version"))
+	assert.Equal(t, 200, rec.StatusCode)
+	assert.Equal(t, "1.0", rec.HeaderMap.Get("X-Version"))
 }
 
 func TestResponse_EmptyValues_NilPointerBodyFields(t *testing.T) {
@@ -596,17 +596,17 @@ func TestResponse_EmptyValues_NilPointerBodyFields(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/test",
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 
 	var result map[string]any
-	err = json.Unmarshal(rec.Body.Bytes(), &result)
+	err = json.Unmarshal(rec.Body, &result)
 	assert.Nil(t, err)
 	// Nil pointers should serialize as null
 	assert.Nil(t, result["name"])

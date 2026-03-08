@@ -44,7 +44,7 @@ type MultipartSchema struct {
 }
 
 func main() {
-	r := gofi.NewServeMux()
+	r := gofi.NewRouter()
 
 	// Define the multipart handler
 	multipartHandler := gofi.DefineHandler(gofi.RouteOptions{
@@ -95,7 +95,7 @@ func main() {
 	}()
 
 	log.Printf("Server listening on :%s\n", PORT)
-	if err := http.ListenAndServe(fmt.Sprintf(":%s", PORT), r); err != nil {
+	if err := r.Listen(fmt.Sprintf(":%s", PORT)); err != nil {
 		log.Fatal(err)
 	}
 }

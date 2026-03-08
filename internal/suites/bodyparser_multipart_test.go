@@ -37,7 +37,7 @@ func TestSchema_MultipartBody_Struct(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
@@ -55,7 +55,7 @@ func TestSchema_MultipartBody_Struct(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 }
 
 func TestSchema_MultipartBody_Files(t *testing.T) {
@@ -88,7 +88,7 @@ func TestSchema_MultipartBody_Files(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
@@ -115,7 +115,7 @@ func TestSchema_MultipartBody_Files(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 }
 
 func TestSchema_MultipartBody_Mixed(t *testing.T) {
@@ -143,7 +143,7 @@ func TestSchema_MultipartBody_Mixed(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
@@ -162,7 +162,7 @@ func TestSchema_MultipartBody_Mixed(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 }
 
 func TestSchema_MultipartBody_ValidationErrors(t *testing.T) {
@@ -187,7 +187,7 @@ func TestSchema_MultipartBody_ValidationErrors(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 
 	// Missing file
 	body := &bytes.Buffer{}
@@ -230,7 +230,7 @@ func TestSchema_MultipartBody_ArrayPointer(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 	_ = writer.WriteField("tags", "id1")
@@ -247,7 +247,7 @@ func TestSchema_MultipartBody_ArrayPointer(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 }
 
 func TestSchema_MultipartBody_StructArray(t *testing.T) {
@@ -277,7 +277,7 @@ func TestSchema_MultipartBody_StructArray(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 	_ = writer.WriteField("users.0.name", "Alice")
@@ -296,7 +296,7 @@ func TestSchema_MultipartBody_StructArray(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 }
 
 func TestSchema_MultipartBody_StructArrayPointer(t *testing.T) {
@@ -326,7 +326,7 @@ func TestSchema_MultipartBody_StructArrayPointer(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 	_ = writer.WriteField("users.0.name", "Alice")
@@ -342,5 +342,5 @@ func TestSchema_MultipartBody_StructArrayPointer(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 }

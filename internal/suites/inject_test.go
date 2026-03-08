@@ -20,15 +20,15 @@ func TestInject_BasicGET(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/test",
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
-	assert.Equal(t, "injected", rec.Body.String())
+	assert.Equal(t, 200, rec.StatusCode)
+	assert.Equal(t, "injected", string(rec.Body))
 }
 
 // =============================================================================
@@ -53,7 +53,7 @@ func TestInject_PathParams(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/users/{userId}",
@@ -61,7 +61,7 @@ func TestInject_PathParams(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, "user:abc-123", rec.Body.String())
+	assert.Equal(t, "user:abc-123", string(rec.Body))
 }
 
 // =============================================================================
@@ -86,7 +86,7 @@ func TestInject_QueryParams(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/search",
@@ -94,7 +94,7 @@ func TestInject_QueryParams(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, "search:golang", rec.Body.String())
+	assert.Equal(t, "search:golang", string(rec.Body))
 }
 
 // =============================================================================
@@ -119,7 +119,7 @@ func TestInject_Headers(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/auth",
@@ -127,7 +127,7 @@ func TestInject_Headers(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, "token:secret-123", rec.Body.String())
+	assert.Equal(t, "token:secret-123", string(rec.Body))
 }
 
 // =============================================================================
@@ -152,7 +152,7 @@ func TestInject_Cookies(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method: "GET",
 		Path:   "/profile",
@@ -162,7 +162,7 @@ func TestInject_Cookies(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, "session:sess-xyz", rec.Body.String())
+	assert.Equal(t, "session:sess-xyz", string(rec.Body))
 }
 
 // =============================================================================
@@ -187,7 +187,7 @@ func TestInject_Body(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "POST",
 		Path:    "/users",
@@ -195,20 +195,18 @@ func TestInject_Body(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, "name:Bob", rec.Body.String())
+	assert.Equal(t, "name:Bob", string(rec.Body))
 }
 
 // =============================================================================
-// 7. Inject with PreHandlers
+// 7. Inject with Middleware
 // =============================================================================
 
-func TestInject_WithPreHandlers(t *testing.T) {
-	m := gofi.NewServeMux()
-	m.UsePreHandler(func(next gofi.HandlerFunc) gofi.HandlerFunc {
-		return func(c gofi.Context) error {
-			c.Writer().Header().Set("X-Injected-Pre", "yes")
-			return next(c)
-		}
+func TestInject_WithMiddleware(t *testing.T) {
+	m := gofi.NewRouter()
+	m.Use(func(c gofi.Context) error {
+		c.Writer().Header().Set("X-Injected-Pre", "yes")
+		return c.Next()
 	})
 
 	handler := gofi.RouteOptions{
@@ -223,7 +221,7 @@ func TestInject_WithPreHandlers(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, "yes", rec.Header().Get("X-Injected-Pre"))
+	assert.Equal(t, "yes", rec.HeaderMap.Get("X-Injected-Pre"))
 }
 
 // =============================================================================
@@ -265,7 +263,7 @@ func TestInject_AllParts(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "POST",
 		Path:    "/items/{id}",
@@ -277,6 +275,6 @@ func TestInject_AllParts(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
-	assert.Equal(t, "all-ok", rec.Body.String())
+	assert.Equal(t, 200, rec.StatusCode)
+	assert.Equal(t, "all-ok", string(rec.Body))
 }

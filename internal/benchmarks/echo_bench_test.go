@@ -432,7 +432,40 @@ func loadEchoSchema(routes []route) http.Handler {
 	return e
 }
 
-// Variables staticEcho, staticEchoS, githubEcho, etc. declared in bench_test.go
+// =============================================================================
+// Global vars for loaded Echo routers
+// =============================================================================
+
+var (
+	staticEcho  http.Handler
+	staticEchoS http.Handler
+	githubEcho  http.Handler
+	githubEchoS http.Handler
+	gplusEcho   http.Handler
+	gplusEchoS  http.Handler
+	parseEcho   http.Handler
+	parseEchoS  http.Handler
+)
+
+func init() {
+	calcMem("Echo", func() { staticEcho = loadEcho(staticRoutes) })
+	calcMem("EchoS", func() { staticEchoS = loadEchoSchema(staticRoutes) })
+}
+
+func init() {
+	calcMem("Echo", func() { githubEcho = loadEcho(githubAPI) })
+	calcMem("EchoS", func() { githubEchoS = loadEchoSchema(githubAPI) })
+}
+
+func init() {
+	calcMem("Echo", func() { gplusEcho = loadEcho(gplusAPI) })
+	calcMem("EchoS", func() { gplusEchoS = loadEchoSchema(gplusAPI) })
+}
+
+func init() {
+	calcMem("Echo", func() { parseEcho = loadEcho(parseAPI) })
+	calcMem("EchoS", func() { parseEchoS = loadEchoSchema(parseAPI) })
+}
 
 // --- Echo API benchmarks ---
 func BenchmarkEcho_StaticAll(b *testing.B) { benchRoutes(b, staticEcho, staticRoutes) }

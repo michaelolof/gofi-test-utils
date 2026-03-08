@@ -1,9 +1,6 @@
 package suites
 
 import (
-	"io"
-	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/michaelolof/gofi"
@@ -30,36 +27,30 @@ func TestRouting_AllHTTPMethods(t *testing.T) {
 
 	for _, tc := range methods {
 		t.Run(tc.method, func(t *testing.T) {
-			r := gofi.NewServeMux()
+			r := gofi.NewRouter()
 			tc.register(r, "/test", gofi.RouteOptions{
 				Handler: func(c gofi.Context) error {
 					return c.SendString(200, tc.method+"-ok")
 				},
 			})
 
-			w := httptest.NewRecorder()
-			req := httptest.NewRequest(tc.method, "/test", nil)
-			r.ServeHTTP(w, req)
-
-			assert.Equal(t, 200, w.Code, "Expected 200 for %s", tc.method)
+			w := r.Test(tc.method, "/test")
+			assert.Equal(t, 200, w.StatusCode, "Expected 200 for %s", tc.method)
 		})
 	}
 }
 
 func TestRouting_MethodFunc(t *testing.T) {
-	r := gofi.NewServeMux()
+	r := gofi.NewRouter()
 	r.Method("GET", "/method-test", gofi.RouteOptions{
 		Handler: func(c gofi.Context) error {
 			return c.SendString(200, "method-ok")
 		},
 	})
 
-	w := httptest.NewRecorder()
-	req := httptest.NewRequest("GET", "/method-test", nil)
-	r.ServeHTTP(w, req)
-
-	assert.Equal(t, 200, w.Code)
-	assert.Equal(t, "method-ok", w.Body.String())
+	w := r.Test("GET", "/method-test")
+	assert.Equal(t, 200, w.StatusCode)
+	assert.Equal(t, "method-ok", string(w.Body))
 }
 
 // =============================================================================
@@ -67,7 +58,7 @@ func TestRouting_MethodFunc(t *testing.T) {
 // =============================================================================
 
 func TestRouting_StaticRoute(t *testing.T) {
-	r := gofi.NewServeMux()
+	r := gofi.NewRouter()
 	r.Get("/", gofi.RouteOptions{
 		Handler: func(c gofi.Context) error { return c.SendString(200, "root") },
 	})
@@ -84,11 +75,9 @@ func TestRouting_StaticRoute(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.path, func(t *testing.T) {
-			w := httptest.NewRecorder()
-			req := httptest.NewRequest("GET", tc.path, nil)
-			r.ServeHTTP(w, req)
-			assert.Equal(t, 200, w.Code)
-			assert.Equal(t, tc.body, w.Body.String())
+			w := r.Test("GET", tc.path)
+			assert.Equal(t, 200, w.StatusCode)
+			assert.Equal(t, tc.body, string(w.Body))
 		})
 	}
 }
@@ -98,49 +87,43 @@ func TestRouting_StaticRoute(t *testing.T) {
 // =============================================================================
 
 func TestRouting_SingleParam(t *testing.T) {
-	r := gofi.NewServeMux()
-	r.Get("/user/{name}", gofi.RouteOptions{
+	r := gofi.NewRouter()
+	r.Get("/user/:name", gofi.RouteOptions{
 		Handler: func(c gofi.Context) error {
-			name := c.Request().PathValue("name")
+			name := c.Param("name")
 			return c.SendString(200, "user:"+name)
 		},
 	})
 
-	w := httptest.NewRecorder()
-	req := httptest.NewRequest("GET", "/user/alice", nil)
-	r.ServeHTTP(w, req)
-	assert.Equal(t, "user:alice", w.Body.String())
+	w := r.Test("GET", "/user/alice")
+	assert.Equal(t, "user:alice", string(w.Body))
 }
 
 func TestRouting_MultipleParams(t *testing.T) {
-	r := gofi.NewServeMux()
-	r.Get("/users/{userId}/posts/{postId}", gofi.RouteOptions{
+	r := gofi.NewRouter()
+	r.Get("/users/:userId/posts/:postId", gofi.RouteOptions{
 		Handler: func(c gofi.Context) error {
-			uid := c.Request().PathValue("userId")
-			pid := c.Request().PathValue("postId")
+			uid := c.Param("userId")
+			pid := c.Param("postId")
 			return c.SendString(200, uid+":"+pid)
 		},
 	})
 
-	w := httptest.NewRecorder()
-	req := httptest.NewRequest("GET", "/users/42/posts/99", nil)
-	r.ServeHTTP(w, req)
-	assert.Equal(t, "42:99", w.Body.String())
+	w := r.Test("GET", "/users/42/posts/99")
+	assert.Equal(t, "42:99", string(w.Body))
 }
 
 func TestRouting_WildcardRoute(t *testing.T) {
-	r := gofi.NewServeMux()
-	r.Get("/files/{path...}", gofi.RouteOptions{
+	r := gofi.NewRouter()
+	r.Get("/files/*path", gofi.RouteOptions{
 		Handler: func(c gofi.Context) error {
-			p := c.Request().PathValue("path")
+			p := c.Param("path")
 			return c.SendString(200, "file:"+p)
 		},
 	})
 
-	w := httptest.NewRecorder()
-	req := httptest.NewRequest("GET", "/files/images/logo.png", nil)
-	r.ServeHTTP(w, req)
-	assert.Equal(t, "file:images/logo.png", w.Body.String())
+	w := r.Test("GET", "/files/images/logo.png")
+	assert.Equal(t, "file:images/logo.png", string(w.Body))
 }
 
 // =============================================================================
@@ -148,15 +131,13 @@ func TestRouting_WildcardRoute(t *testing.T) {
 // =============================================================================
 
 func TestRouting_404(t *testing.T) {
-	r := gofi.NewServeMux()
+	r := gofi.NewRouter()
 	r.Get("/exists", gofi.RouteOptions{
 		Handler: func(c gofi.Context) error { return c.SendString(200, "ok") },
 	})
 
-	w := httptest.NewRecorder()
-	req := httptest.NewRequest("GET", "/does-not-exist", nil)
-	r.ServeHTTP(w, req)
-	assert.Equal(t, 404, w.Code)
+	w := r.Test("GET", "/does-not-exist")
+	assert.Equal(t, 404, w.StatusCode)
 }
 
 // =============================================================================
@@ -164,7 +145,7 @@ func TestRouting_404(t *testing.T) {
 // =============================================================================
 
 func TestRouting_RouteNesting(t *testing.T) {
-	r := gofi.NewServeMux()
+	r := gofi.NewRouter()
 
 	r.Route("/api", func(api gofi.Router) {
 		api.Get("/users", gofi.RouteOptions{
@@ -187,50 +168,29 @@ func TestRouting_RouteNesting(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.path, func(t *testing.T) {
-			w := httptest.NewRecorder()
-			req := httptest.NewRequest("GET", tc.path, nil)
-			r.ServeHTTP(w, req)
-			assert.Equal(t, 200, w.Code)
-			assert.Equal(t, tc.body, w.Body.String())
+			w := r.Test("GET", tc.path)
+			assert.Equal(t, 200, w.StatusCode)
+			assert.Equal(t, tc.body, string(w.Body))
 		})
 	}
 }
 
 func TestRouting_DeepNesting(t *testing.T) {
-	r := gofi.NewServeMux()
+	r := gofi.NewRouter()
 	r.Get("/v1/api/deep/nested/resource/action", gofi.RouteOptions{
 		Handler: func(c gofi.Context) error { return c.SendString(200, "deep-ok") },
 	})
 
-	w := httptest.NewRecorder()
-	req := httptest.NewRequest("GET", "/v1/api/deep/nested/resource/action", nil)
-	r.ServeHTTP(w, req)
-	assert.Equal(t, "deep-ok", w.Body.String())
+	w := r.Test("GET", "/v1/api/deep/nested/resource/action")
+	assert.Equal(t, "deep-ok", string(w.Body))
 }
 
 // =============================================================================
-// 6. Handle / HandleFunc
-// =============================================================================
-
-func TestRouting_HandleFunc(t *testing.T) {
-	r := gofi.NewServeMux()
-	r.HandleFunc("GET /plain", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(200)
-		io.WriteString(w, "plain-handler")
-	})
-
-	w := httptest.NewRecorder()
-	req := httptest.NewRequest("GET", "/plain", nil)
-	r.ServeHTTP(w, req)
-	assert.Equal(t, "plain-handler", w.Body.String())
-}
-
-// =============================================================================
-// 7. Multiple Routes Same Path Different Methods
+// 6. Multiple Routes Same Path Different Methods
 // =============================================================================
 
 func TestRouting_SamePathDifferentMethods(t *testing.T) {
-	r := gofi.NewServeMux()
+	r := gofi.NewRouter()
 	r.Get("/resource", gofi.RouteOptions{
 		Handler: func(c gofi.Context) error { return c.SendString(200, "get-resource") },
 	})
@@ -253,11 +213,9 @@ func TestRouting_SamePathDifferentMethods(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.method, func(t *testing.T) {
-			w := httptest.NewRecorder()
-			req := httptest.NewRequest(tc.method, "/resource", nil)
-			r.ServeHTTP(w, req)
-			assert.Equal(t, tc.code, w.Code)
-			assert.Equal(t, tc.body, w.Body.String())
+			w := r.Test(tc.method, "/resource")
+			assert.Equal(t, tc.code, w.StatusCode)
+			assert.Equal(t, tc.body, string(w.Body))
 		})
 	}
 }

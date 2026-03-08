@@ -49,6 +49,10 @@ var routers = []struct {
 	{"ChiS", "Chi + Schema"},
 	{"Echo", "Echo"},
 	{"EchoS", "Echo + Schema"},
+	{"Gin", "Gin"},
+	{"GinS", "Gin + Schema"},
+	{"Fiber", "Fiber"},
+	{"FiberS", "Fiber + Schema"},
 }
 
 var benchRe = regexp.MustCompile(`^(Benchmark\w+)-\d+\s+(\d+)\s+([\d.]+)\s+ns/op\s+(\d+)\s+B/op\s+(\d+)\s+allocs/op`)
@@ -185,8 +189,8 @@ func writeResults(w io.Writer, data ParsedData) {
 	// --- Memory ---
 	p("## Memory Consumption")
 	p("")
-	p("| API | Routes | Gofi | Gofi + Schema | Chi | Echo |")
-	p("|---|---|---|---|---|---|")
+	p("| API | Routes | Gofi | Gofi + Schema | Chi | Echo | Gin | Fiber |")
+	p("|---|---|---|---|---|---|---|---|")
 	for _, sec := range []struct{ l, k string }{{"Static", "Static"}, {"GitHub", "GithubAPI"}, {"Google+", "GPlusAPI"}, {"Parse.com", "ParseAPI"}} {
 		cnt := data.Sections[sec.k]
 		m := map[string]int{}
@@ -198,7 +202,7 @@ func writeResults(w io.Writer, data ParsedData) {
 		if len(m) == 0 {
 			continue
 		}
-		p("| %s | %d | %s | %s | %s | %s |", sec.l, cnt, fmtBytes(m["Gofi"]), fmtBytes(m["GofiS"]), fmtBytes(m["Chi"]), fmtBytes(m["Echo"]))
+		p("| %s | %d | %s | %s | %s | %s | %s | %s |", sec.l, cnt, fmtBytes(m["Gofi"]), fmtBytes(m["GofiS"]), fmtBytes(m["Chi"]), fmtBytes(m["Echo"]), fmtBytes(m["Gin"]), fmtBytes(m["Fiber"]))
 	}
 	p("")
 
@@ -210,14 +214,14 @@ func writeResults(w io.Writer, data ParsedData) {
 		only []string
 	}
 
-	allBase := []string{"Gofi", "GofiS", "Chi", "ChiS", "Echo", "EchoS"}
-	noSchema := []string{"Gofi", "Chi", "Echo"}
+	allBase := []string{"Gofi", "GofiS", "Chi", "ChiS", "Echo", "EchoS", "Gin", "GinS", "Fiber", "FiberS"}
+	noSchema := []string{"Gofi", "Chi", "Echo", "Gin", "Fiber"}
 
 	rows := []benchRow{
 		{"Static Route", "Static", allBase},
 		{"Single Param", "Param", allBase},
 		{"5 Params", "Param5", allBase},
-		{"20 Params", "Param20", []string{"Gofi", "Chi", "Echo"}},
+		{"20 Params", "Param20", []string{"Gofi", "Chi", "Echo", "Gin", "Fiber"}},
 		{"Param Write", "ParamWrite", allBase},
 		{"Multi Param (2)", "MultiParam", allBase},
 		{"Wildcard", "Wildcard", noSchema},
@@ -226,7 +230,7 @@ func writeResults(w io.Writer, data ParsedData) {
 		{"Middleware ×5", "Middleware5", noSchema},
 		{"Middleware ×10", "Middleware10", noSchema},
 		{"Middleware ×20", "Middleware20", noSchema},
-		{"JSON Bind", "BindJSON_Small", []string{"Gofi", "GofiS", "Chi", "ChiS", "Echo", "EchoS"}},
+		{"JSON Bind", "BindJSON_Small", []string{"Gofi", "GofiS", "Chi", "ChiS", "Echo", "EchoS", "Gin", "GinS", "Fiber", "FiberS"}},
 		{"JSON Response", "JSONResponse_Large", noSchema},
 		{"Parallel", "Parallel", noSchema},
 		{"Route Groups", "RouteGroup", noSchema},
@@ -244,11 +248,11 @@ func writeResults(w io.Writer, data ParsedData) {
 
 	p("## Summary")
 	p("")
-	p("| Category | Gofi | Gofi + Schema | Chi | Chi + Schema | Echo | Echo + Schema | Winner |")
-	p("|---|---|---|---|---|---|---|---|")
+	p("| Category | Gofi | Gofi + Schema | Chi | Chi + Schema | Echo | Echo + Schema | Gin | Gin + Schema | Fiber | Fiber + Schema | Winner |")
+	p("|---|---|---|---|---|---|---|---|---|---|---|---|")
 
 	for _, row := range rows {
-		vals := make([]string, 6)
+		vals := make([]string, 10)
 		var candidates []struct {
 			n string
 			v float64
@@ -276,8 +280,8 @@ func writeResults(w io.Writer, data ParsedData) {
 			}
 		}
 		win := pickWinner(candidates...)
-		p("| %s | %s | %s | %s | %s | %s | %s | %s |",
-			row.label, vals[0], vals[1], vals[2], vals[3], vals[4], vals[5], win)
+		p("| %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |",
+			row.label, vals[0], vals[1], vals[2], vals[3], vals[4], vals[5], vals[6], vals[7], vals[8], vals[9], win)
 	}
 	p("")
 
@@ -328,13 +332,15 @@ func writeResults(w io.Writer, data ParsedData) {
 	// Middleware
 	p("### Middleware Scalability")
 	p("")
-	p("| Middlewares | Gofi | Chi | Echo | Gofi allocs | Chi allocs | Echo allocs |")
-	p("|---|---|---|---|---|---|---|")
+	p("| Middlewares | Gofi | Chi | Echo | Gin | Fiber | Gofi allocs | Chi allocs | Echo allocs | Gin allocs | Fiber allocs |")
+	p("|---|---|---|---|---|---|---|---|---|---|---|")
 	for _, c := range []string{"5", "10", "20"} {
 		g := avgs[benchKey("Gofi", "Middleware"+c)]
 		ch := avgs[benchKey("Chi", "Middleware"+c)]
 		ec := avgs[benchKey("Echo", "Middleware"+c)]
-		p("| %s | %s | %s | %s | %.0f | %.0f | %.0f |", c, fmtNum(g.NsPerOp), fmtNum(ch.NsPerOp), fmtNum(ec.NsPerOp), g.AllocsPerOp, ch.AllocsPerOp, ec.AllocsPerOp)
+		gn := avgs[benchKey("Gin", "Middleware"+c)]
+		fb := avgs[benchKey("Fiber", "Middleware"+c)]
+		p("| %s | %s | %s | %s | %s | %s | %.0f | %.0f | %.0f | %.0f | %.0f |", c, fmtNum(g.NsPerOp), fmtNum(ch.NsPerOp), fmtNum(ec.NsPerOp), fmtNum(gn.NsPerOp), fmtNum(fb.NsPerOp), g.AllocsPerOp, ch.AllocsPerOp, ec.AllocsPerOp, gn.AllocsPerOp, fb.AllocsPerOp)
 	}
 	p("")
 
@@ -355,7 +361,7 @@ func writeResults(w io.Writer, data ParsedData) {
 	p("")
 	p("| Router | ns/op | B/op | allocs/op |")
 	p("|---|---|---|---|")
-	for _, pref := range []string{"Gofi", "Chi", "Echo"} {
+	for _, pref := range []string{"Gofi", "Chi", "Echo", "Gin", "Fiber"} {
 		if g := avgs[benchKey(pref, "JSONResponse_Large")]; g.NsPerOp > 0 {
 			p("| %s | %s | %.0f | %.0f |", pref, fmtNum(g.NsPerOp), g.BytesPerOp, g.AllocsPerOp)
 		}
@@ -368,7 +374,7 @@ func writeResults(w io.Writer, data ParsedData) {
 		p("")
 		p("| Router | ns/op | B/op | allocs/op |")
 		p("|---|---|---|---|")
-		for _, pref := range []string{"Gofi", "Chi", "Echo"} {
+		for _, pref := range []string{"Gofi", "Chi", "Echo", "Gin", "Fiber"} {
 			if g := avgs[benchKey(pref, sec.suffix)]; g.NsPerOp > 0 {
 				p("| %s | %s | %.0f | %.0f |", pref, fmtNum(g.NsPerOp), g.BytesPerOp, g.AllocsPerOp)
 			}
@@ -391,8 +397,8 @@ func writeResults(w io.Writer, data ParsedData) {
 		cnt := data.Sections[api.mem]
 		p("### %s (%d routes)", api.title, cnt)
 		p("")
-		p("| Benchmark | Gofi | Gofi + Schema | Chi | Echo | Echo + Schema |")
-		p("|---|---|---|---|---|---|")
+		p("| Benchmark | Gofi | Gofi + Schema | Chi | Echo | Echo + Schema | Gin | Gin + Schema | Fiber | Fiber + Schema |")
+		p("|---|---|---|---|---|---|---|---|---|---|")
 
 		// Memory
 		m := map[string]int{}
@@ -402,7 +408,7 @@ func writeResults(w io.Writer, data ParsedData) {
 			}
 		}
 		if len(m) > 0 {
-			p("| Memory | %s | %s | %s | %s | %s |", fmtBytes(m["Gofi"]), fmtBytes(m["GofiS"]), fmtBytes(m["Chi"]), fmtBytes(m["Echo"]), fmtBytes(m["EchoS"]))
+			p("| Memory | %s | %s | %s | %s | %s | %s | %s | %s | %s |", fmtBytes(m["Gofi"]), fmtBytes(m["GofiS"]), fmtBytes(m["Chi"]), fmtBytes(m["Echo"]), fmtBytes(m["EchoS"]), fmtBytes(m["Gin"]), fmtBytes(m["GinS"]), fmtBytes(m["Fiber"]), fmtBytes(m["FiberS"]))
 		}
 
 		for _, t := range api.tests {
@@ -411,10 +417,14 @@ func writeResults(w io.Writer, data ParsedData) {
 			c := avgs[benchKey("Chi", t.s)]
 			e := avgs[benchKey("Echo", t.s)]
 			es := avgs[benchKey("EchoS", t.s)]
-			p("| %s (ns/op) | %s | %s | %s | %s | %s |", t.l, fmtNs(g.NsPerOp), fmtNs(gs.NsPerOp), fmtNs(c.NsPerOp), fmtNs(e.NsPerOp), fmtNs(es.NsPerOp))
+			gn := avgs[benchKey("Gin", t.s)]
+			gns := avgs[benchKey("GinS", t.s)]
+			fb := avgs[benchKey("Fiber", t.s)]
+			fbs := avgs[benchKey("FiberS", t.s)]
+			p("| %s (ns/op) | %s | %s | %s | %s | %s | %s | %s | %s | %s |", t.l, fmtNs(g.NsPerOp), fmtNs(gs.NsPerOp), fmtNs(c.NsPerOp), fmtNs(e.NsPerOp), fmtNs(es.NsPerOp), fmtNs(gn.NsPerOp), fmtNs(gns.NsPerOp), fmtNs(fb.NsPerOp), fmtNs(fbs.NsPerOp))
 			if t.l == "All" {
-				p("| %s (B/op) | %.0f | %.0f | %.0f | %.0f | %.0f |", t.l, g.BytesPerOp, gs.BytesPerOp, c.BytesPerOp, e.BytesPerOp, es.BytesPerOp)
-				p("| %s (allocs) | %.0f | %.0f | %.0f | %.0f | %.0f |", t.l, g.AllocsPerOp, gs.AllocsPerOp, c.AllocsPerOp, e.AllocsPerOp, es.AllocsPerOp)
+				p("| %s (B/op) | %.0f | %.0f | %.0f | %.0f | %.0f | %.0f | %.0f | %.0f | %.0f |", t.l, g.BytesPerOp, gs.BytesPerOp, c.BytesPerOp, e.BytesPerOp, es.BytesPerOp, gn.BytesPerOp, gns.BytesPerOp, fb.BytesPerOp, fbs.BytesPerOp)
+				p("| %s (allocs) | %.0f | %.0f | %.0f | %.0f | %.0f | %.0f | %.0f | %.0f | %.0f |", t.l, g.AllocsPerOp, gs.AllocsPerOp, c.AllocsPerOp, e.AllocsPerOp, es.AllocsPerOp, gn.AllocsPerOp, gns.AllocsPerOp, fb.AllocsPerOp, fbs.AllocsPerOp)
 			}
 		}
 		p("")
@@ -423,10 +433,10 @@ func writeResults(w io.Writer, data ParsedData) {
 	// Schema overhead comparison
 	p("### Schema Overhead")
 	p("")
-	p("| Scenario | Gofi | Gofi + Schema | Chi | Chi + Schema | Echo | Echo + Schema |")
-	p("|---|---|---|---|---|---|---|")
+	p("| Scenario | Gofi | Gofi + Schema | Chi | Chi + Schema | Echo | Echo + Schema | Gin | Gin + Schema | Fiber | Fiber + Schema |")
+	p("|---|---|---|---|---|---|---|---|---|---|---|")
 	for _, item := range []struct{ l, s string }{{"Static", "Static"}, {"1 param", "Param"}, {"5 params", "Param5"}, {"JSON bind", "BindJSON_Small"}} {
-		vals := make([]string, 6)
+		vals := make([]string, 10)
 		for i, rt := range routers {
 			if g := avgs[benchKey(rt.prefix, item.s)]; g.NsPerOp > 0 {
 				vals[i] = fmtNum(g.NsPerOp)
@@ -434,7 +444,7 @@ func writeResults(w io.Writer, data ParsedData) {
 				vals[i] = "—"
 			}
 		}
-		p("| %s | %s | %s | %s | %s | %s | %s |", item.l, vals[0], vals[1], vals[2], vals[3], vals[4], vals[5])
+		p("| %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |", item.l, vals[0], vals[1], vals[2], vals[3], vals[4], vals[5], vals[6], vals[7], vals[8], vals[9])
 	}
 	p("")
 }
@@ -473,16 +483,16 @@ func main() {
 }
 
 func findProjectRoot() string {
-	if _, err := os.Stat("internal/benchmarks/bench_test.go"); err == nil {
+	if _, err := os.Stat("internal/benchmarks/gofi_bench_test.go"); err == nil {
 		return "."
 	}
-	if _, err := os.Stat("../internal/benchmarks/bench_test.go"); err == nil {
+	if _, err := os.Stat("../internal/benchmarks/gofi_bench_test.go"); err == nil {
 		return ".."
 	}
-	if _, err := os.Stat("../../internal/benchmarks/bench_test.go"); err == nil {
+	if _, err := os.Stat("../../internal/benchmarks/gofi_bench_test.go"); err == nil {
 		return "../.."
 	}
-	fmt.Fprintln(os.Stderr, "Error: cannot find internal/benchmarks/bench_test.go. Run from the gofi-benchmarks directory.")
+	fmt.Fprintln(os.Stderr, "Error: cannot find internal/benchmarks/gofi_bench_test.go. Run from the gofi-benchmarks directory.")
 	os.Exit(1)
 	return ""
 }

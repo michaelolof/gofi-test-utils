@@ -3,7 +3,6 @@ package suites
 import (
 	"encoding/json"
 	"errors"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/michaelolof/gofi"
@@ -15,24 +14,22 @@ import (
 // =============================================================================
 
 func TestErrorHandler_Default(t *testing.T) {
-	r := gofi.NewServeMux()
+	r := gofi.NewRouter()
 	r.Get("/fail", gofi.RouteOptions{
 		Handler: func(c gofi.Context) error {
 			return errors.New("something went wrong")
 		},
 	})
 
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, httptest.NewRequest("GET", "/fail", nil))
-
-	assert.Equal(t, 500, w.Code)
+	w := r.Test("GET", "/fail")
+	assert.Equal(t, 500, w.StatusCode)
 
 	var resp struct {
 		Status     string `json:"status"`
 		StatusCode int    `json:"statusCode"`
 		Message    string `json:"message"`
 	}
-	err := json.Unmarshal(w.Body.Bytes(), &resp)
+	err := json.Unmarshal(w.Body, &resp)
 	assert.Nil(t, err)
 	assert.Equal(t, "error", resp.Status)
 	assert.Equal(t, 500, resp.StatusCode)
@@ -44,7 +41,7 @@ func TestErrorHandler_Default(t *testing.T) {
 // =============================================================================
 
 func TestErrorHandler_Custom(t *testing.T) {
-	r := gofi.NewServeMux()
+	r := gofi.NewRouter()
 	r.UseErrorHandler(func(err error, c gofi.Context) {
 		c.Writer().WriteHeader(418)
 		c.Writer().Write([]byte("custom:" + err.Error()))
@@ -56,11 +53,9 @@ func TestErrorHandler_Custom(t *testing.T) {
 		},
 	})
 
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, httptest.NewRequest("GET", "/fail", nil))
-
-	assert.Equal(t, 418, w.Code)
-	assert.Equal(t, "custom:teapot", w.Body.String())
+	w := r.Test("GET", "/fail")
+	assert.Equal(t, 418, w.StatusCode)
+	assert.Equal(t, "custom:teapot", string(w.Body))
 }
 
 // =============================================================================
@@ -68,7 +63,7 @@ func TestErrorHandler_Custom(t *testing.T) {
 // =============================================================================
 
 func TestErrorHandler_NilError(t *testing.T) {
-	r := gofi.NewServeMux()
+	r := gofi.NewRouter()
 	errHandlerCalled := false
 	r.UseErrorHandler(func(err error, c gofi.Context) {
 		errHandlerCalled = true
@@ -80,11 +75,9 @@ func TestErrorHandler_NilError(t *testing.T) {
 		},
 	})
 
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, httptest.NewRequest("GET", "/ok", nil))
-
+	w := r.Test("GET", "/ok")
 	assert.False(t, errHandlerCalled, "Error handler should NOT be called when handler returns nil")
-	assert.Equal(t, 200, w.Code)
+	assert.Equal(t, 200, w.StatusCode)
 }
 
 // =============================================================================
@@ -100,7 +93,7 @@ func TestErrorHandler_ValidationError(t *testing.T) {
 		}
 	}
 
-	r := gofi.NewServeMux()
+	r := gofi.NewRouter()
 	var capturedErr error
 	r.UseErrorHandler(func(err error, c gofi.Context) {
 		capturedErr = err
@@ -116,12 +109,10 @@ func TestErrorHandler_ValidationError(t *testing.T) {
 		},
 	})
 
-	w := httptest.NewRecorder()
-	req := httptest.NewRequest("GET", "/items/", nil)
-	r.ServeHTTP(w, req)
+	w := r.Test("GET", "/items/")
 
 	// The exact behavior depends on whether the route matches at all with empty param.
 	// Either the route won't match (404) or validation will fail.
-	assert.True(t, w.Code == 400 || w.Code == 404,
-		"Expected 400 or 404, got %d (capturedErr: %v)", w.Code, capturedErr)
+	assert.True(t, w.StatusCode == 400 || w.StatusCode == 404,
+		"Expected 400 or 404, got %d (capturedErr: %v)", w.StatusCode, capturedErr)
 }

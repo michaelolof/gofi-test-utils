@@ -35,7 +35,7 @@ func TestSchema_JSONBody_Struct(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "POST",
 		Path:    "/users",
@@ -43,7 +43,7 @@ func TestSchema_JSONBody_Struct(t *testing.T) {
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 }
 
 func TestSchema_JSONBody_Primitive(t *testing.T) {
@@ -63,7 +63,7 @@ func TestSchema_JSONBody_Primitive(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	_, err := m.Inject(gofi.InjectOptions{
 		Method:  "POST",
 		Path:    "/value",
@@ -90,7 +90,7 @@ func TestSchema_JSONBody_Array(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	_, err := m.Inject(gofi.InjectOptions{
 		Method:  "POST",
 		Path:    "/list",
@@ -119,7 +119,7 @@ func TestSchema_JSONBody_MissingRequired(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	m.Inject(gofi.InjectOptions{
 		Method:  "POST",
 		Path:    "/users",
@@ -154,7 +154,7 @@ func TestSchema_EmptyValues_RequiredBody_EmptyJSON(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	m.Inject(gofi.InjectOptions{
 		Method:  "POST",
 		Path:    "/users",
@@ -185,7 +185,7 @@ func TestSchema_EmptyValues_RequiredBody_ZeroValues(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	m.Inject(gofi.InjectOptions{
 		Method:  "POST",
 		Path:    "/items",
@@ -219,7 +219,7 @@ func TestSchema_MalformedJSON_InvalidSyntax(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	m.Inject(gofi.InjectOptions{
 		Method:  "POST",
 		Path:    "/users",
@@ -250,7 +250,7 @@ func TestSchema_MalformedJSON_TruncatedBody(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	m.Inject(gofi.InjectOptions{
 		Method:  "POST",
 		Path:    "/users",
@@ -280,7 +280,7 @@ func TestSchema_MalformedJSON_UnclosedString(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	m.Inject(gofi.InjectOptions{
 		Method:  "POST",
 		Path:    "/users",
@@ -310,7 +310,7 @@ func TestSchema_MalformedJSON_WrongType_StringForInt(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	m.Inject(gofi.InjectOptions{
 		Method:  "POST",
 		Path:    "/users",
@@ -346,7 +346,7 @@ func TestSchema_MalformedJSON_WrongType_StringForObject(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	// This should not panic regardless of whether it errors or not
 	m.Inject(gofi.InjectOptions{
 		Method:  "POST",
@@ -375,7 +375,7 @@ func TestSchema_MalformedJSON_ExtraTrailingChars(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	m.Inject(gofi.InjectOptions{
 		Method:  "POST",
 		Path:    "/users",
@@ -407,7 +407,7 @@ func TestSchema_MalformedJSON_NullBody(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	m.Inject(gofi.InjectOptions{
 		Method:  "POST",
 		Path:    "/users",
@@ -437,7 +437,7 @@ func TestSchema_MalformedJSON_ArrayInsteadOfObject(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	m.Inject(gofi.InjectOptions{
 		Method:  "POST",
 		Path:    "/users",
@@ -467,7 +467,7 @@ func TestSchema_MalformedJSON_BooleanBody(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	m.Inject(gofi.InjectOptions{
 		Method:  "POST",
 		Path:    "/users",
@@ -503,20 +503,20 @@ func TestResponse_Send_JSONBody(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/data",
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 
 	var result struct {
 		Message string `json:"message"`
 		Count   int    `json:"count"`
 	}
-	err = json.Unmarshal(rec.Body.Bytes(), &result)
+	err = json.Unmarshal(rec.Body, &result)
 	assert.Nil(t, err)
 	assert.Equal(t, "success", result.Message)
 	assert.Equal(t, 42, result.Count)
@@ -552,21 +552,21 @@ func TestResponse_Send_PointerBodyFields(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/user",
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 
 	var result struct {
 		Name    *string  `json:"name"`
 		Age     *int     `json:"age"`
 		Balance *float64 `json:"balance"`
 	}
-	err = json.Unmarshal(rec.Body.Bytes(), &result)
+	err = json.Unmarshal(rec.Body, &result)
 	assert.Nil(t, err)
 	assert.NotNil(t, result.Name)
 	assert.Equal(t, "Alice", *result.Name)
@@ -602,17 +602,17 @@ func TestResponse_Send_NilPointerBodyFields(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/user",
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 
 	var result map[string]any
-	err = json.Unmarshal(rec.Body.Bytes(), &result)
+	err = json.Unmarshal(rec.Body, &result)
 	assert.Nil(t, err)
 	assert.Equal(t, "yes", result["present"])
 }
@@ -645,19 +645,19 @@ func TestResponse_Send_TimeInBody(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/timestamps",
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 
 	// gofi's custom JSON encoder may encode time.Time as an object or string.
 	// Verify the fields are present and non-nil by decoding into a generic map.
 	var result map[string]any
-	err = json.Unmarshal(rec.Body.Bytes(), &result)
+	err = json.Unmarshal(rec.Body, &result)
 	assert.Nil(t, err)
 	assert.NotNil(t, result["created_at"], "Expected created_at field to be present")
 	assert.NotNil(t, result["updated_at"], "Expected updated_at field to be present")
@@ -698,19 +698,19 @@ func TestResponse_Send_MixedTimePointerBody(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/timestamps",
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 
 	// gofi's custom JSON encoder may encode time.Time as an object or string.
 	// Verify the fields are present and non-nil by decoding into a generic map.
 	var result map[string]any
-	err = json.Unmarshal(rec.Body.Bytes(), &result)
+	err = json.Unmarshal(rec.Body, &result)
 	assert.Nil(t, err)
 	assert.NotNil(t, result["created_at"], "Expected created_at field to be present")
 	assert.NotNil(t, result["expires_at"], "Expected expires_at field to be present")
@@ -736,15 +736,15 @@ func TestResponse_EmptyValues_EmptyArrayBody(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/tags",
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
-	assert.Equal(t, "[]", strings.TrimSpace(rec.Body.String()))
+	assert.Equal(t, 200, rec.StatusCode)
+	assert.Equal(t, "[]", strings.TrimSpace(string(rec.Body)))
 }
 
 func TestResponse_EmptyValues_ZeroValueBody(t *testing.T) {
@@ -769,14 +769,14 @@ func TestResponse_EmptyValues_ZeroValueBody(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/test",
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 
 	var result struct {
 		Count   int     `json:"count"`
@@ -784,7 +784,7 @@ func TestResponse_EmptyValues_ZeroValueBody(t *testing.T) {
 		Name    string  `json:"name"`
 		Enabled bool    `json:"enabled"`
 	}
-	err = json.Unmarshal(rec.Body.Bytes(), &result)
+	err = json.Unmarshal(rec.Body, &result)
 	assert.Nil(t, err)
 	assert.Equal(t, 0, result.Count)
 	assert.Equal(t, 0.0, result.Score)
@@ -813,14 +813,14 @@ func TestResponse_EdgeCase_NilBodyOnRequiredSchema(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, _ := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/test",
 		Handler: &handler,
 	})
 	// Should not return 200 — nil body on a defined schema should error
-	assert.NotEqual(t, 200, rec.Code, "Nil body on required schema should produce an error")
+	assert.NotEqual(t, 200, rec.StatusCode, "Nil body on required schema should produce an error")
 }
 
 func TestResponse_EdgeCase_SendNonStructBody(t *testing.T) {
@@ -840,13 +840,13 @@ func TestResponse_EdgeCase_SendNonStructBody(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, _ := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/test",
 		Handler: &handler,
 	})
-	assert.NotEqual(t, 200, rec.Code, "Non-struct body should produce an error")
+	assert.NotEqual(t, 200, rec.StatusCode, "Non-struct body should produce an error")
 }
 
 func TestResponse_EdgeCase_ValidJSON_AlwaysProduced(t *testing.T) {
@@ -874,18 +874,18 @@ func TestResponse_EdgeCase_ValidJSON_AlwaysProduced(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/test",
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 
 	// Verify the body is valid JSON by unmarshaling
 	var result map[string]any
-	err = json.Unmarshal(rec.Body.Bytes(), &result)
+	err = json.Unmarshal(rec.Body, &result)
 	assert.Nil(t, err, "Response body should always be valid JSON")
 	assert.Equal(t, "test", result["name"])
 	assert.Equal(t, float64(42), result["count"])
@@ -917,21 +917,21 @@ func TestResponse_EdgeCase_SpecialCharsInBody(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	rec, err := m.Inject(gofi.InjectOptions{
 		Method:  "GET",
 		Path:    "/test",
 		Handler: &handler,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 200, rec.Code)
+	assert.Equal(t, 200, rec.StatusCode)
 
 	// Verify the body is valid JSON even with special characters
 	var result struct {
 		Name    string `json:"name"`
 		Message string `json:"message"`
 	}
-	err = json.Unmarshal(rec.Body.Bytes(), &result)
+	err = json.Unmarshal(rec.Body, &result)
 	assert.Nil(t, err, "Response with special chars should produce valid JSON")
 	assert.Equal(t, `He said "hello"`, result.Name)
 	assert.Contains(t, result.Message, "line1")
@@ -955,7 +955,7 @@ func TestSchema_JSONBody_ArrayPointer(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	_, err := m.Inject(gofi.InjectOptions{
 		Method:  "POST",
 		Path:    "/list",
@@ -988,7 +988,7 @@ func TestSchema_JSONBody_StructArray(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	_, err := m.Inject(gofi.InjectOptions{
 		Method:  "POST",
 		Path:    "/users",
@@ -1020,7 +1020,7 @@ func TestSchema_JSONBody_StructArrayPointer(t *testing.T) {
 		},
 	}
 
-	m := gofi.NewServeMux()
+	m := gofi.NewRouter()
 	_, err := m.Inject(gofi.InjectOptions{
 		Method:  "POST",
 		Path:    "/users",
