@@ -236,13 +236,13 @@ def sync_readme(filepath, http, endpoints_order, os_info, go_version, cpu, ram):
             continue
 
         out.append(line)
-        if "### Results Overview" in line and i + 3 < len(lines) and "| Endpoint |" in lines[i+2]:
+        if "### Results Overview" in line and i + 3 < len(lines) and "Endpoint" in lines[i+2]:
             i += 1
             out.append(lines[i]) # empty
             i += 1
-            out.append("| Endpoint | Gofi (fasthttp) | Fiber (fasthttp) | Chi (net/http) | Gin (net/http) | Echo (net/http) | Winner |\n")
+            out.append("| Case | Endpoint | Gofi (fasthttp) | Fiber (fasthttp) | Chi (net/http) | Gin (net/http) | Echo (net/http) | Winner |\n")
             i += 1
-            out.append("|---|---|---|---|---|---|---|\n")
+            out.append("|---|---|---|---|---|---|---|---|\n")
             
             # Skip old table rows
             while i + 1 < len(lines) and lines[i+1].startswith("|"):
@@ -261,7 +261,7 @@ def sync_readme(filepath, http, endpoints_order, os_info, go_version, cpu, ram):
                     def w(v, name):
                         return f"**{fmt_num(v)}**" if v == best else fmt_num(v)
                     winner = "🏆 **Gofi**" if best == g else ("🏆 **Fiber**" if best == fb else "🏆 **Chi**" if best == c else "🏆 **Gin**" if best == gn else "🏆 **Echo**")
-                    out.append(f"| `{method_url}` | {w(g, 'Gofi')} | {w(fb, 'Fiber')} | {w(c, 'Chi')} | {w(gn, 'Gin')} | {w(e, 'Echo')} | {winner} |\n")
+                    out.append(f"| {raw_endpoint} | `{method_url}` | {w(g, 'Gofi')} | {w(fb, 'Fiber')} | {w(c, 'Chi')} | {w(gn, 'Gin')} | {w(e, 'Echo')} | {winner} |\n")
         i += 1
         
     with open(filepath, 'w') as f:
