@@ -2,7 +2,7 @@ module github.com/michaelolof/gofi-test-utils
 
 go 1.25.0
 
-replace github.com/michaelolof/gofi => ../gofi
+// replace github.com/michaelolof/gofi => ../gofi
 
 require (
 	github.com/gin-gonic/gin v1.12.0
