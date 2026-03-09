@@ -5,12 +5,14 @@ go 1.25.0
 // replace github.com/michaelolof/gofi => ../gofi
 
 require (
+	github.com/fasthttp/websocket v1.5.12
 	github.com/gin-gonic/gin v1.12.0
 	github.com/go-chi/chi/v5 v5.2.5
 	github.com/go-playground/validator/v10 v10.30.1
 	github.com/gofiber/fiber/v2 v2.52.12
+	github.com/google/uuid v1.6.0
 	github.com/labstack/echo/v4 v4.15.0
-	github.com/michaelolof/gofi v0.7.0
+	github.com/michaelolof/gofi v0.7.1
 	github.com/stretchr/testify v1.11.1
 	github.com/valyala/fasthttp v1.69.0
 )
@@ -22,14 +24,12 @@ require (
 	github.com/bytedance/sonic/loader v0.5.0 // indirect
 	github.com/cloudwego/base64x v0.1.6 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/fasthttp/websocket v1.5.12 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.12 // indirect
 	github.com/gin-contrib/sse v1.1.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/goccy/go-yaml v1.19.2 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.18.2 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect

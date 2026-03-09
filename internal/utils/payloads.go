@@ -3,6 +3,8 @@ package utils
 import (
 	"fmt"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type SmallPayload struct {
@@ -49,7 +51,7 @@ type NestedMetricsValidate struct {
 type EventRecordValidate struct {
 	EventID   string                `json:"eventId" validate:"required,alphanum" binding:"required,alphanum"`
 	Timestamp time.Time             `json:"timestamp" validate:"required" binding:"required"`
-	Tags      []string              `json:"tags" validate:"omitempty,max=5,dive,min=3,max=30" binding:"omitempty,max=5,dive,min=3,max=30"`
+	Tags      []string              `json:"tags" validate:"omitempty,max=5,dive,min=2,max=30" binding:"omitempty,max=5,dive,min=2,max=30"`
 	Metrics   NestedMetricsValidate `json:"metrics" validate:"required" binding:"required"`
 }
 
@@ -102,8 +104,8 @@ func GenerateLargeDataValidate() []LargePayloadValidate {
 	largeDataValidate := make([]LargePayloadValidate, 50)
 	for i := 0; i < 50; i++ {
 		largeDataValidate[i] = LargePayloadValidate{
-			ID:          fmt.Sprintf("uuid-%d", i),
-			UserID:      i,
+			ID:          uuid.NewString(),
+			UserID:      i + 1,
 			AccountType: "premium",
 			IsVerified:  i%2 == 0,
 			Balance:     1500.50 + float64(i),
@@ -111,15 +113,15 @@ func GenerateLargeDataValidate() []LargePayloadValidate {
 			Metadata:    map[string]string{"source": "web", "version": "1.0"},
 			Events: []EventRecordValidate{
 				{
-					EventID:   fmt.Sprintf("evt-%d-1", i),
+					EventID:   fmt.Sprintf("evt%d1", i),
 					Timestamp: now,
-					Tags:      []string{"login", "success"},
+					Tags:      []string{"login", "success", "choir"},
 					Metrics:   NestedMetricsValidate{CPUUsage: 45.2, MemoryBytes: 1024000, Active: true},
 				},
 				{
-					EventID:   fmt.Sprintf("evt-%d-2", i),
+					EventID:   fmt.Sprintf("evt%d2", i),
 					Timestamp: now,
-					Tags:      []string{"view", "page"},
+					Tags:      []string{"view", "page", "stuff"},
 					Metrics:   NestedMetricsValidate{CPUUsage: 55.1, MemoryBytes: 2048000, Active: false},
 				},
 			},
