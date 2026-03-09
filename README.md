@@ -31,21 +31,21 @@ python3 ./cmd/httpbench/runner.py
 
 | Case | Endpoint | Gofi (fasthttp) | Fiber (fasthttp) | Chi (net/http) | Gin (net/http) | Echo (net/http) | Winner |
 |---|---|---|---|---|---|---|---|
-| Static Route | `GET /` | **163,880** | 83,525 | 60,663 | 43,530 | 14,799 | 🏆 **Gofi** |
-| Single Param | `GET /user/gordon` | **139,461** | 72,217 | 43,594 | 40,774 | 14,151 | 🏆 **Gofi** |
-| Multi Param | `GET /users/123/posts/456` | **134,118** | 63,252 | 30,245 | 34,869 | 16,030 | 🏆 **Gofi** |
-| Middleware Chain | `GET /middlewares` | **135,437** | 66,113 | 27,912 | 34,058 | 15,901 | 🏆 **Gofi** |
-| Query Processing | `GET /query?q=searchterm&limit=10` | **129,563** | 59,226 | 25,752 | 33,093 | 15,661 | 🏆 **Gofi** |
-| JSON Bind (Small) | `POST /json` | **75,308** | 45,575 | 20,473 | 29,130 | 15,214 | 🏆 **Gofi** |
-| JSON Response (Small) | `GET /json-response` | **119,048** | 27,631 | 15,263 | 22,990 | 13,483 | 🏆 **Gofi** |
-| JSON Bind (Large) | `POST /json-large` | **2,377** | 2,128 | 1,133 | 2,080 | 1,355 | 🏆 **Gofi** |
-| JSON Response (Large) | `GET /json-response-large` | **117,543** | 4,658 | 2,831 | 5,154 | 3,758 | 🏆 **Gofi** |
-| JSON Validate (Small) | `POST /json-validate-small` | **80,958** | 39,710 | 13,278 | 27,656 | 20,150 | 🏆 **Gofi** |
-| JSON Validate Response (Small) | `GET /json-response-validate-small` | **98,963** | 51,098 | 12,405 | 34,316 | 26,632 | 🏆 **Gofi** |
-| JSON Validate (Large) | `POST /json-validate-large` | **6,124** | 2,092 | 831 | 1,393 | 1,625 | 🏆 **Gofi** |
-| JSON Validate Response (Large) | `GET /json-response-validate-large` | **76,345** | 5,023 | 2,357 | 4,765 | 4,322 | 🏆 **Gofi** |
-| Multipart Bind | `POST /multipart` | **49,574** | 23,896 | 7,547 | 17,307 | 16,894 | 🏆 **Gofi** |
-| FormData Bind | `POST /formdata` | **88,269** | 36,532 | 8,766 | 24,873 | 22,766 | 🏆 **Gofi** |
+| Static Route | `GET /` | **174,533** | 125,927 | 79,398 | 59,907 | 55,374 | 🏆 **Gofi** |
+| Single Param | `GET /user/gordon` | **150,968** | 103,337 | 73,591 | 53,414 | 42,351 | 🏆 **Gofi** |
+| Multi Param | `GET /users/123/posts/456` | **142,353** | 94,202 | 70,630 | 46,235 | 38,593 | 🏆 **Gofi** |
+| Middleware Chain | `GET /middlewares` | **144,973** | 95,732 | 67,328 | 45,185 | 36,221 | 🏆 **Gofi** |
+| Query Processing | `GET /query?q=searchterm&limit=10` | **138,379** | 92,876 | 59,591 | 43,764 | 35,085 | 🏆 **Gofi** |
+| JSON Bind (Small) | `POST /json` | **94,183** | 78,355 | 50,703 | 38,596 | 31,128 | 🏆 **Gofi** |
+| JSON Response (Small) | `GET /json-response` | **133,920** | 48,116 | 40,036 | 31,058 | 27,036 | 🏆 **Gofi** |
+| JSON Bind (Large) | `POST /json-large` | 3,204 | **3,520** | 3,294 | 2,795 | 2,237 | 🏆 **Fiber** |
+| JSON Response (Large) | `GET /json-response-large` | **122,048** | 7,919 | 9,028 | 7,000 | 6,483 | 🏆 **Gofi** |
+| JSON Validate (Small) | `POST /json-validate-small` | **96,417** | 70,593 | 42,212 | 36,384 | 29,573 | 🏆 **Gofi** |
+| JSON Validate Response (Small) | `GET /json-response-validate-small` | **116,639** | 85,565 | 47,283 | 47,535 | 37,081 | 🏆 **Gofi** |
+| JSON Validate (Large) | `POST /json-validate-large` | **17,850** | 3,555 | 2,821 | 1,965 | 2,309 | 🏆 **Gofi** |
+| JSON Validate Response (Large) | `GET /json-response-validate-large` | **121,944** | 8,628 | 7,382 | 7,213 | 6,678 | 🏆 **Gofi** |
+| Multipart Bind | `POST /multipart` | **70,513** | 42,762 | 24,294 | 28,382 | 20,870 | 🏆 **Gofi** |
+| FormData Bind | `POST /formdata` | **124,613** | 67,915 | 34,513 | 38,296 | 31,287 | 🏆 **Gofi** |
 
 **What this means:** Under heavy concurrent network load, Gofi processes about **2x more requests per second** than Chi, Echo, or Gin. Even against Fiber (which shares the fasthttp backend), Gofi's optimized radix tree and `fastjson` engine deliver 20% to 60% higher throughput.
 
