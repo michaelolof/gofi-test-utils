@@ -12,7 +12,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.52.12
 	github.com/google/uuid v1.6.0
 	github.com/labstack/echo/v4 v4.15.0
-	github.com/michaelolof/gofi v0.7.1
+	github.com/michaelolof/gofi v0.7.4
 	github.com/stretchr/testify v1.11.1
 	github.com/valyala/fasthttp v1.69.0
 )
