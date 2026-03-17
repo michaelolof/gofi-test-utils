@@ -19,7 +19,7 @@ func TestETagMiddleware(t *testing.T) {
 	})
 
 	// Test case 1: Initial request (gets ETag)
-	resp1 := app.Test("GET", "/etag")
+	resp1 := mustTest(t, app, "GET", "/etag")
 	if resp1.StatusCode != 200 {
 		t.Errorf("Expected 200, got %d", resp1.StatusCode)
 	}
@@ -81,7 +81,7 @@ func TestETagWeak(t *testing.T) {
 		},
 	})
 
-	resp := app.Test("GET", "/weak")
+	resp := mustTest(t, app, "GET", "/weak")
 
 	etag := resp.HeaderMap.Get("ETag")
 	// Weak Etag should start with W/

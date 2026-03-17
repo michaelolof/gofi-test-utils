@@ -52,7 +52,7 @@ func TestStaticMiddleware(t *testing.T) {
 	})
 
 	// Test case 1: Retrieve valid static file (app.css)
-	resp1 := app.Test("GET", "/assets/app.css")
+	resp1 := mustTest(t, app, "GET", "/assets/app.css")
 	if resp1.StatusCode != 200 {
 		t.Errorf("Expected 200 for app.css, got %d", resp1.StatusCode)
 	}
@@ -62,7 +62,7 @@ func TestStaticMiddleware(t *testing.T) {
 	}
 
 	// Test case 2: Retrieve index file implicitly
-	resp2 := app.Test("GET", "/assets/")
+	resp2 := mustTest(t, app, "GET", "/assets/")
 	if resp2.StatusCode != 200 {
 		t.Errorf("Expected 200 for index.html implicitly, got %d", resp2.StatusCode)
 	}
@@ -72,7 +72,7 @@ func TestStaticMiddleware(t *testing.T) {
 	}
 
 	// Test case 3: Try to access nonexistent file, should hit fallback handler
-	resp3 := app.Test("GET", "/assets/fallback")
+	resp3 := mustTest(t, app, "GET", "/assets/fallback")
 	if resp3.StatusCode != 200 {
 		t.Errorf("Expected 200 from fallback route since file wasn't found, got %d", resp3.StatusCode)
 	}

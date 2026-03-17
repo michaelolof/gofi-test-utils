@@ -13,6 +13,9 @@ import (
 
 func TestCSRF_SignedTokenFlow(t *testing.T) {
 	app := gofi.NewRouter()
+	app.UseErrorHandler(func(err error, c gofi.Context) {
+		_ = c.SendString(http.StatusForbidden, err.Error())
+	})
 
 	cfg := middleware.CSRFConfig{}
 	rv := reflect.ValueOf(&cfg).Elem()
@@ -91,6 +94,9 @@ func TestCSRF_SignedTokenFlow(t *testing.T) {
 	}
 	if resp3.StatusCode != http.StatusForbidden {
 		t.Fatalf("expected 403 for tampered token, got %d", resp3.StatusCode)
+	}
+	if string(resp3.Body) != "invalid CSRF token" {
+		t.Fatalf("expected invalid csrf token body, got %q", string(resp3.Body))
 	}
 
 }

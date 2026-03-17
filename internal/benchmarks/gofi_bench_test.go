@@ -31,13 +31,17 @@ var gofiNoopMiddleware gofi.MiddlewareFunc = func(c gofi.Context) error {
 	return c.Next()
 }
 
+func benchDoGofiTest(router gofi.Router, method, path string) {
+	_, _ = router.Test(gofi.TestOptions{Method: method, Path: path})
+}
+
 // benchGofiRequest measures routing performance for a single request (Gofi — fasthttp).
 func benchGofiRequest(b *testing.B, router gofi.Router, method, path string) {
 	b.ReportAllocs()
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		router.Test(method, path)
+		benchDoGofiTest(router, method, path)
 	}
 }
 
@@ -47,7 +51,7 @@ func benchGofiBenchTest(b *testing.B, router gofi.Router, method, path string) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		router.Test(method, path)
+		benchDoGofiTest(router, method, path)
 	}
 }
 
@@ -58,7 +62,7 @@ func benchGofiRoutes(b *testing.B, router gofi.Router, routes []route) {
 
 	for i := 0; i < b.N; i++ {
 		for _, r := range routes {
-			router.Test(r.method, r.path)
+			benchDoGofiTest(router, r.method, r.path)
 		}
 	}
 }
@@ -393,7 +397,7 @@ func BenchmarkGofi_BindJSON_Small(b *testing.B) {
 	b.StartTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		r.Test("POST", "/")
+		benchDoGofiTest(r, "POST", "/")
 	}
 }
 
@@ -414,7 +418,7 @@ func BenchmarkGofiS_BindJSON_Small(b *testing.B) {
 	b.StartTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		r.Test("POST", "/")
+		benchDoGofiTest(r, "POST", "/")
 	}
 }
 
@@ -437,7 +441,7 @@ func BenchmarkGofi_JSONResponse_Large(b *testing.B) {
 	b.StartTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		r.Test("GET", "/")
+		benchDoGofiTest(r, "GET", "/")
 	}
 }
 
@@ -454,7 +458,7 @@ func BenchmarkGofi_Parallel(b *testing.B) {
 
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			r.Test("GET", "/")
+			benchDoGofiTest(r, "GET", "/")
 		}
 	})
 }
@@ -585,7 +589,7 @@ func BenchmarkGofiBT_Parallel(b *testing.B) {
 
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			r.Test("GET", "/")
+			benchDoGofiTest(r, "GET", "/")
 		}
 	})
 }

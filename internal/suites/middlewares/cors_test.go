@@ -19,7 +19,7 @@ func TestCORS_Basic(t *testing.T) {
 	})
 
 	// Test case 1: No Origin header
-	resp := app.Test("GET", "/cors")
+	resp := mustTest(t, app, "GET", "/cors")
 	if resp.HeaderMap.Get("Access-Control-Allow-Origin") != "" {
 		t.Errorf("Expected strictly no CORS headers when Origin is omitted")
 	}

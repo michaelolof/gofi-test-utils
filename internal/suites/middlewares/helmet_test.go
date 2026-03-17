@@ -18,7 +18,7 @@ func TestHelmet_Default(t *testing.T) {
 		},
 	})
 
-	resp := app.Test("GET", "/")
+	resp := mustTest(t, app, "GET", "/")
 
 	if resp.StatusCode != 200 {
 		t.Errorf("Expected 200, got %d", resp.StatusCode)
@@ -67,7 +67,7 @@ func TestHelmet_Custom(t *testing.T) {
 		},
 	})
 
-	resp := app.Test("GET", "/")
+	resp := mustTest(t, app, "GET", "/")
 
 	if resp.HeaderMap.Get("X-XSS-Protection") != "1; mode=block" {
 		t.Errorf("Expected custom XSS header")

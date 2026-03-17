@@ -36,13 +36,13 @@ func TestSkipConfig(t *testing.T) {
 	})
 
 	// Test case 1: Should Skip
-	resp1 := app.Test("GET", "/skip/me")
+	resp1 := mustTest(t, app, "GET", "/skip/me")
 	if resp1.HeaderMap.Get("X-Skipped") == "false" {
 		t.Errorf("Expected middleware to be skipped (no X-Skipped header)")
 	}
 
 	// Test case 2: Should Not Skip
-	resp2 := app.Test("GET", "/apply/me")
+	resp2 := mustTest(t, app, "GET", "/apply/me")
 	if resp2.HeaderMap.Get("X-Skipped") != "false" {
 		t.Errorf("Expected middleware to execute (X-Skipped header should be false)")
 	}

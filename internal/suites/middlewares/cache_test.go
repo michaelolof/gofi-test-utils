@@ -27,13 +27,13 @@ func TestCacheMiddleware(t *testing.T) {
 	})
 
 	// Request 1: cache miss, runs handler
-	resp1 := app.Test("GET", "/cache")
+	resp1 := mustTest(t, app, "GET", "/cache")
 	if string(resp1.Body) != "Count: 1" {
 		t.Errorf("Expected Count: 1, got %s", string(resp1.Body))
 	}
 
 	// Request 2: cache hit, skips handler
-	resp2 := app.Test("GET", "/cache")
+	resp2 := mustTest(t, app, "GET", "/cache")
 	if string(resp2.Body) != "Count: 1" {
 		t.Errorf("Expected Count: 1 (cached), got %s", string(resp2.Body))
 	}
@@ -46,7 +46,7 @@ func TestCacheMiddleware(t *testing.T) {
 	time.Sleep(150 * time.Millisecond)
 
 	// Request 3: cache miss, runs handler again
-	resp3 := app.Test("GET", "/cache")
+	resp3 := mustTest(t, app, "GET", "/cache")
 	if string(resp3.Body) != "Count: 2" {
 		t.Errorf("Expected Count: 2 (expired), got %s", string(resp3.Body))
 	}

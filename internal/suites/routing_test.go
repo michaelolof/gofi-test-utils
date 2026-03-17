@@ -34,7 +34,7 @@ func TestRouting_AllHTTPMethods(t *testing.T) {
 				},
 			})
 
-			w := r.Test(tc.method, "/test")
+			w := mustTest(t, r, tc.method, "/test")
 			assert.Equal(t, 200, w.StatusCode, "Expected 200 for %s", tc.method)
 		})
 	}
@@ -48,7 +48,7 @@ func TestRouting_MethodFunc(t *testing.T) {
 		},
 	})
 
-	w := r.Test("GET", "/method-test")
+	w := mustTest(t, r, "GET", "/method-test")
 	assert.Equal(t, 200, w.StatusCode)
 	assert.Equal(t, "method-ok", string(w.Body))
 }
@@ -75,7 +75,7 @@ func TestRouting_StaticRoute(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.path, func(t *testing.T) {
-			w := r.Test("GET", tc.path)
+			w := mustTest(t, r, "GET", tc.path)
 			assert.Equal(t, 200, w.StatusCode)
 			assert.Equal(t, tc.body, string(w.Body))
 		})
@@ -95,7 +95,7 @@ func TestRouting_SingleParam(t *testing.T) {
 		},
 	})
 
-	w := r.Test("GET", "/user/alice")
+	w := mustTest(t, r, "GET", "/user/alice")
 	assert.Equal(t, "user:alice", string(w.Body))
 }
 
@@ -109,7 +109,7 @@ func TestRouting_MultipleParams(t *testing.T) {
 		},
 	})
 
-	w := r.Test("GET", "/users/42/posts/99")
+	w := mustTest(t, r, "GET", "/users/42/posts/99")
 	assert.Equal(t, "42:99", string(w.Body))
 }
 
@@ -122,7 +122,7 @@ func TestRouting_WildcardRoute(t *testing.T) {
 		},
 	})
 
-	w := r.Test("GET", "/files/images/logo.png")
+	w := mustTest(t, r, "GET", "/files/images/logo.png")
 	assert.Equal(t, "file:images/logo.png", string(w.Body))
 }
 
@@ -136,7 +136,7 @@ func TestRouting_404(t *testing.T) {
 		Handler: func(c gofi.Context) error { return c.SendString(200, "ok") },
 	})
 
-	w := r.Test("GET", "/does-not-exist")
+	w := mustTest(t, r, "GET", "/does-not-exist")
 	assert.Equal(t, 404, w.StatusCode)
 }
 
@@ -168,7 +168,7 @@ func TestRouting_RouteNesting(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.path, func(t *testing.T) {
-			w := r.Test("GET", tc.path)
+			w := mustTest(t, r, "GET", tc.path)
 			assert.Equal(t, 200, w.StatusCode)
 			assert.Equal(t, tc.body, string(w.Body))
 		})
@@ -181,7 +181,7 @@ func TestRouting_DeepNesting(t *testing.T) {
 		Handler: func(c gofi.Context) error { return c.SendString(200, "deep-ok") },
 	})
 
-	w := r.Test("GET", "/v1/api/deep/nested/resource/action")
+	w := mustTest(t, r, "GET", "/v1/api/deep/nested/resource/action")
 	assert.Equal(t, "deep-ok", string(w.Body))
 }
 
@@ -213,7 +213,7 @@ func TestRouting_SamePathDifferentMethods(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.method, func(t *testing.T) {
-			w := r.Test(tc.method, "/resource")
+			w := mustTest(t, r, tc.method, "/resource")
 			assert.Equal(t, tc.code, w.StatusCode)
 			assert.Equal(t, tc.body, string(w.Body))
 		})

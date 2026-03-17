@@ -22,7 +22,7 @@ func TestMiddleware_GlobalUse(t *testing.T) {
 		Handler: func(c gofi.Context) error { return c.SendString(200, "ok") },
 	})
 
-	w := r.Test("GET", "/test")
+	w := mustTest(t, r, "GET", "/test")
 	assert.Equal(t, "applied", w.HeaderMap.Get("X-Global"))
 }
 
@@ -45,10 +45,10 @@ func TestMiddleware_InlineWith(t *testing.T) {
 		Handler: func(c gofi.Context) error { return c.SendString(200, "public") },
 	})
 
-	w1 := r.Test("GET", "/protected")
+	w1 := mustTest(t, r, "GET", "/protected")
 	assert.Equal(t, "checked", w1.HeaderMap.Get("X-Auth"), "Protected route should have X-Auth")
 
-	w2 := r.Test("GET", "/public")
+	w2 := mustTest(t, r, "GET", "/public")
 	assert.Empty(t, w2.HeaderMap.Get("X-Auth"), "Public route should NOT have X-Auth")
 }
 
@@ -81,11 +81,11 @@ func TestMiddleware_GroupIsolation(t *testing.T) {
 		},
 	})
 
-	w1 := r.Test("GET", "/grouped")
+	w1 := mustTest(t, r, "GET", "/grouped")
 	gh, gth := w1.HeaderMap.Get("X-Group"), w1.HeaderMap.Get("X-Handler")
 	assert.True(t, gh == "yes" || gth == "grouped", "Expected X-Group=yes or X-Handler=grouped, got X-Group=%q X-Handler=%q", gh, gth)
 
-	w2 := r.Test("GET", "/ungrouped")
+	w2 := mustTest(t, r, "GET", "/ungrouped")
 	assert.NotEqual(t, "yes", w2.HeaderMap.Get("X-Group"), "Ungrouped route should NOT have X-Group header")
 }
 
@@ -103,7 +103,7 @@ func TestMiddleware_GlobalMiddleware(t *testing.T) {
 		Handler: func(c gofi.Context) error { return c.SendString(200, "ok") },
 	})
 
-	w := r.Test("GET", "/test")
+	w := mustTest(t, r, "GET", "/test")
 	assert.Equal(t, "yes", w.HeaderMap.Get("X-Pre"))
 }
 
@@ -119,7 +119,7 @@ func TestMiddleware_InlineWith_PerRoute(t *testing.T) {
 		Handler: func(c gofi.Context) error { return c.SendString(200, "ok") },
 	})
 
-	w := r.Test("GET", "/with-pre")
+	w := mustTest(t, r, "GET", "/with-pre")
 	assert.Equal(t, "active", w.HeaderMap.Get("X-Route-Pre"))
 }
 
@@ -152,7 +152,7 @@ func TestMiddleware_ExecutionOrder(t *testing.T) {
 		},
 	})
 
-	r.Test("GET", "/order")
+	mustTest(t, r, "GET", "/order")
 
 	expected := []string{"global-before", "route-before", "handler", "route-after", "global-after"}
 	assert.Equal(t, expected, order)
@@ -177,7 +177,7 @@ func TestMiddleware_ErrorShortCircuit(t *testing.T) {
 		},
 	})
 
-	r.Test("GET", "/blocked")
+	mustTest(t, r, "GET", "/blocked")
 	assert.False(t, handlerCalled, "Handler should NOT have been called after middleware error")
 }
 
@@ -200,7 +200,7 @@ func TestMiddleware_MultipleChained(t *testing.T) {
 		Handler: func(c gofi.Context) error { return c.SendString(200, "ok") },
 	})
 
-	r.Test("GET", "/chain")
+	mustTest(t, r, "GET", "/chain")
 	assert.Equal(t, 10, count, "Expected 10 middlewares to execute")
 }
 
@@ -232,11 +232,11 @@ func TestMiddleware_GroupIsolation_UseOnly(t *testing.T) {
 		})
 	})
 
-	w1 := r.Test("GET", "/g1")
+	w1 := mustTest(t, r, "GET", "/g1")
 	assert.Equal(t, "true", w1.HeaderMap.Get("X-Base"), "g1 should have base middleware")
 	assert.Equal(t, "true", w1.HeaderMap.Get("X-Group1"), "g1 should have group1 middleware")
 
-	w2 := r.Test("GET", "/g2")
+	w2 := mustTest(t, r, "GET", "/g2")
 	assert.Equal(t, "true", w2.HeaderMap.Get("X-Base"), "g2 should have base middleware")
 	assert.Empty(t, w2.HeaderMap.Get("X-Group1"), "g2 should NOT have group1 middleware")
 }

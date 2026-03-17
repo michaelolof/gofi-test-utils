@@ -30,7 +30,7 @@ func TestRedirectConfig_Exact(t *testing.T) {
 	app.Get("/legacy/v1", gofi.RouteOptions{Handler: func(c gofi.Context) error { return nil }})
 
 	// Test case 1: Exact match 1
-	resp1 := app.Test("GET", "/old")
+	resp1 := mustTest(t, app, "GET", "/old")
 	if resp1.StatusCode != 301 {
 		t.Errorf("Expected 301 exact match, got %d", resp1.StatusCode)
 	}
@@ -39,7 +39,7 @@ func TestRedirectConfig_Exact(t *testing.T) {
 	}
 
 	// Test case 2: Exact match 2
-	resp2 := app.Test("GET", "/legacy/v1")
+	resp2 := mustTest(t, app, "GET", "/legacy/v1")
 	if resp2.StatusCode != 301 {
 		t.Errorf("Expected 301 exact match, got %d", resp2.StatusCode)
 	}
@@ -48,7 +48,7 @@ func TestRedirectConfig_Exact(t *testing.T) {
 	}
 
 	// Test case 3: Unaffected path
-	resp3 := app.Test("GET", "/target")
+	resp3 := mustTest(t, app, "GET", "/target")
 	if resp3.StatusCode != 200 {
 		t.Errorf("Expected 200 for unaffected path, got %d", resp3.StatusCode)
 	}
@@ -71,7 +71,7 @@ func TestRedirectConfig_Wildcard(t *testing.T) {
 	app.Get("/api/v1/*any", gofi.RouteOptions{Handler: func(c gofi.Context) error { return nil }})
 
 	// Test case 1: Wildcard path root match
-	resp1 := app.Test("GET", "/old/users")
+	resp1 := mustTest(t, app, "GET", "/old/users")
 	if resp1.StatusCode != 307 {
 		t.Errorf("Expected 307 wildcard match, got %d", resp1.StatusCode)
 	}
@@ -80,7 +80,7 @@ func TestRedirectConfig_Wildcard(t *testing.T) {
 	}
 
 	// Test case 2: Wildcard deep match
-	resp2 := app.Test("GET", "/api/v1/users/123/profile")
+	resp2 := mustTest(t, app, "GET", "/api/v1/users/123/profile")
 	if resp2.StatusCode != 307 {
 		t.Errorf("Expected 307 wildcard match, got %d", resp2.StatusCode)
 	}
@@ -89,7 +89,7 @@ func TestRedirectConfig_Wildcard(t *testing.T) {
 	}
 
 	// Test case 3: Ignore missing suffix match
-	resp3 := app.Test("GET", "/old-nomatch")
+	resp3 := mustTest(t, app, "GET", "/old-nomatch")
 	if resp3.StatusCode != 307 {
 		if resp3.HeaderMap.Get("Location") != "" {
 			t.Errorf("Expected root wildcard to fallback gracefully, got %s", resp3.HeaderMap.Get("Location"))

@@ -27,7 +27,7 @@ func TestLogger(t *testing.T) {
 		},
 	})
 
-	resp := app.Test("GET", "/log-test")
+	resp := mustTest(t, app, "GET", "/log-test")
 
 	if resp.StatusCode != 200 {
 		t.Errorf("Expected status code 200, got %d", resp.StatusCode)

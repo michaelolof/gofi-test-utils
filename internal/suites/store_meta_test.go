@@ -32,7 +32,7 @@ func TestStore_GlobalStore_SetGet(t *testing.T) {
 		},
 	})
 
-	w := r.Test("GET", "/check")
+	w := mustTest(t, r, "GET", "/check")
 	assert.Equal(t, 200, w.StatusCode)
 }
 
@@ -48,7 +48,7 @@ func TestStore_GlobalStore_TryGet(t *testing.T) {
 		},
 	})
 
-	r.Test("GET", "/tryget")
+	mustTest(t, r, "GET", "/tryget")
 }
 
 func TestStore_GlobalStore_TryGet_Panics(t *testing.T) {
@@ -63,7 +63,7 @@ func TestStore_GlobalStore_TryGet_Panics(t *testing.T) {
 		},
 	})
 
-	r.Test("GET", "/tryget-panic")
+	mustTest(t, r, "GET", "/tryget-panic")
 }
 
 // =============================================================================
@@ -87,7 +87,7 @@ func TestStore_DataStore_PerRequest(t *testing.T) {
 		},
 	})
 
-	w := r.Test("GET", "/data")
+	w := mustTest(t, r, "GET", "/data")
 	assert.Equal(t, 200, w.StatusCode)
 }
 
@@ -116,7 +116,7 @@ func TestMeta_RouteMeta(t *testing.T) {
 		},
 	})
 
-	r.Test("GET", "/public")
+	mustTest(t, r, "GET", "/public")
 }
 
 func TestMeta_RouterMeta_All(t *testing.T) {

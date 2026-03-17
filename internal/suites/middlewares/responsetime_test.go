@@ -25,7 +25,7 @@ func TestResponseTimeConfig(t *testing.T) {
 		},
 	})
 
-	resp := app.Test("GET", "/time")
+	resp := mustTest(t, app, "GET", "/time")
 
 	header := resp.HeaderMap.Get("X-My-Timer")
 	if header == "" {

@@ -21,7 +21,7 @@ func TestRequestID(t *testing.T) {
 	})
 
 	// Test case 1: No ID provided in request
-	resp := app.Test("GET", "/id-test")
+	resp := mustTest(t, app, "GET", "/id-test")
 	if resp.StatusCode != 200 {
 		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
 	}
@@ -72,7 +72,7 @@ func TestRequestIDCustomConfig(t *testing.T) {
 		},
 	})
 
-	resp := app.Test("GET", "/trace")
+	resp := mustTest(t, app, "GET", "/trace")
 
 	if resp.HeaderMap.Get("X-Trace-Id") != "static-trace" {
 		t.Errorf("Expected custom header to be set with custom generator value. Got: %s", resp.HeaderMap.Get("X-Trace-Id"))

@@ -1,6 +1,7 @@
 package suites
 
 import (
+	"encoding/json"
 	"net/http"
 	"strings"
 	"testing"
@@ -277,4 +278,70 @@ func TestInject_AllParts(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 200, rec.StatusCode)
 	assert.Equal(t, "all-ok", string(rec.Body))
+}
+
+// =============================================================================
+// 9. Inject panic uses router error handler
+// =============================================================================
+
+func TestInject_PanicUsesErrorHandler(t *testing.T) {
+	m := gofi.NewRouter()
+
+	var capturedErr error
+	m.UseErrorHandler(func(err error, c gofi.Context) {
+		capturedErr = err
+		_ = c.SendString(555, "inject:"+err.Error())
+	})
+
+	handler := gofi.RouteOptions{
+		Handler: func(c gofi.Context) error {
+			panic("inject boom")
+		},
+	}
+
+	rec, err := m.Inject(gofi.InjectOptions{
+		Method:  "GET",
+		Path:    "/panic",
+		Handler: &handler,
+	})
+	assert.NotNil(t, err)
+	assert.Equal(t, 555, rec.StatusCode)
+	assert.Equal(t, "inject:panic recovered in Inject: inject boom", string(rec.Body))
+	assert.NotNil(t, capturedErr)
+	assert.Equal(t, "panic recovered in Inject: inject boom", capturedErr.Error())
+
+	var httpErr *gofi.HTTPError
+	assert.ErrorAs(t, err, &httpErr)
+	if assert.NotNil(t, httpErr) {
+		assert.Equal(t, 500, httpErr.Code)
+	}
+}
+
+func TestInject_PanicDefaultErrorHandler(t *testing.T) {
+	m := gofi.NewRouter()
+
+	handler := gofi.RouteOptions{
+		Handler: func(c gofi.Context) error {
+			panic("default inject panic")
+		},
+	}
+
+	rec, err := m.Inject(gofi.InjectOptions{
+		Method:  "GET",
+		Path:    "/panic-default",
+		Handler: &handler,
+	})
+	assert.NotNil(t, err)
+	assert.Equal(t, 500, rec.StatusCode)
+
+	var resp struct {
+		Status     string `json:"status"`
+		StatusCode int    `json:"statusCode"`
+		Message    string `json:"message"`
+	}
+	decodeErr := json.Unmarshal(rec.Body, &resp)
+	assert.Nil(t, decodeErr)
+	assert.Equal(t, "error", resp.Status)
+	assert.Equal(t, 500, resp.StatusCode)
+	assert.Equal(t, "panic recovered in Inject: default inject panic", resp.Message)
 }

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 
@@ -10,6 +11,12 @@ import (
 
 func TestCSRF_GenerationAndValidation(t *testing.T) {
 	app := gofi.NewRouter()
+
+	var capturedErr error
+	app.UseErrorHandler(func(err error, c gofi.Context) {
+		capturedErr = err
+		_ = c.SendString(http.StatusForbidden, "Invalid CSRF Token")
+	})
 
 	app.Use(middleware.CSRF())
 
@@ -26,7 +33,7 @@ func TestCSRF_GenerationAndValidation(t *testing.T) {
 	})
 
 	// 1. Send GET request (Safe Method) to generate the token
-	resp1 := app.Test("GET", "/safe")
+	resp1 := mustTest(t, app, "GET", "/safe")
 	if resp1.StatusCode != 200 {
 		t.Errorf("Expected 200 GET, got %d", resp1.StatusCode)
 	}
@@ -59,6 +66,15 @@ func TestCSRF_GenerationAndValidation(t *testing.T) {
 
 	if resp2.StatusCode != 403 {
 		t.Errorf("Expected 403 Forbidden for missing CSRF header, got %d", resp2.StatusCode)
+	}
+	if string(resp2.Body) != "Invalid CSRF Token" {
+		t.Errorf("Expected invalid token body, got %q", string(resp2.Body))
+	}
+	if capturedErr == nil {
+		t.Fatal("Expected router error handler to receive CSRF validation error")
+	}
+	if !errors.Is(capturedErr, capturedErr) || capturedErr.Error() != "invalid CSRF token" {
+		t.Fatalf("Expected 'invalid CSRF token' error, got %v", capturedErr)
 	}
 
 	// 3. Send POST request WITH correct token (Should pass 200)

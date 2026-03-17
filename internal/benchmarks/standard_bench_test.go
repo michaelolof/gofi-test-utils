@@ -95,7 +95,7 @@ func BenchmarkStd_Gofi(b *testing.B) {
 	b.StartTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		r.Test("POST", "/")
+		_, _ = r.Test(gofi.TestOptions{Method: "POST", Path: "/"})
 	}
 }
 
@@ -123,7 +123,7 @@ func BenchmarkStd_GofiSchema(b *testing.B) {
 	b.StartTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		r.Test("POST", "/")
+		_, _ = r.Test(gofi.TestOptions{Method: "POST", Path: "/"})
 	}
 }
 

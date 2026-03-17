@@ -19,7 +19,7 @@ func TestFaviconDefault(t *testing.T) {
 		Handler: func(c gofi.Context) error { return c.SendString(404, "") },
 	})
 
-	resp := app.Test("GET", "/favicon.ico")
+	resp := mustTest(t, app, "GET", "/favicon.ico")
 
 	if resp.StatusCode != fasthttp.StatusOK {
 		t.Errorf("Expected 200 OK, got %d", resp.StatusCode)
@@ -39,7 +39,7 @@ func TestFaviconDefault(t *testing.T) {
 	}
 
 	// Ensure other routes are unaffected
-	respOther := app.Test("GET", "/")
+	respOther := mustTest(t, app, "GET", "/")
 	if respOther.StatusCode != fasthttp.StatusNotFound {
 		t.Errorf("Expected 404 for unhandled route, got %d", respOther.StatusCode)
 	}
@@ -67,7 +67,7 @@ func TestFaviconCustom(t *testing.T) {
 		Handler: func(c gofi.Context) error { return c.SendString(404, "") },
 	})
 
-	resp := app.Test("GET", "/my-favicon.ico")
+	resp := mustTest(t, app, "GET", "/my-favicon.ico")
 
 	if resp.StatusCode != fasthttp.StatusOK {
 		t.Errorf("Expected 200 OK, got %d", resp.StatusCode)
