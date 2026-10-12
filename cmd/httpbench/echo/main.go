@@ -105,6 +105,19 @@ func main() {
 		return c.String(http.StatusOK, "OK")
 	})
 
+	e.POST("/json-bind-validate-large", func(c echo.Context) error {
+		var p []utils.LargePayloadValidate
+		if err := c.Bind(&p); err != nil {
+			return c.String(http.StatusBadRequest, "Bad")
+		}
+		for _, item := range p {
+			if err := c.Validate(&item); err != nil {
+				return c.String(http.StatusBadRequest, "Bad")
+			}
+		}
+		return c.String(http.StatusOK, "OK")
+	})
+
 	e.GET("/json-response-validate-large", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, largeDataValidate)
 	})

@@ -92,6 +92,19 @@ func main() {
 		return c.SendString("OK")
 	})
 
+	app.Post("/json-bind-validate-large", func(c *fiber.Ctx) error {
+		var p []utils.LargePayloadValidate
+		if err := c.BodyParser(&p); err != nil {
+			return c.SendStatus(400)
+		}
+		for _, item := range p {
+			if err := validate.Struct(item); err != nil {
+				return c.SendStatus(400)
+			}
+		}
+		return c.SendString("OK")
+	})
+
 	app.Get("/json-response-validate-large", func(c *fiber.Ctx) error {
 		return c.JSON(largeDataValidate)
 	})

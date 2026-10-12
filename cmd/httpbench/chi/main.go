@@ -103,6 +103,21 @@ func main() {
 		w.Write([]byte("OK"))
 	})
 
+	r.Post("/json-bind-validate-large", func(w http.ResponseWriter, r *http.Request) {
+		var p []utils.LargePayloadValidate
+		if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
+			http.Error(w, "Bad", 400)
+			return
+		}
+		for _, item := range p {
+			if err := validate.Struct(item); err != nil {
+				http.Error(w, "Bad", 400)
+				return
+			}
+		}
+		w.Write([]byte("OK"))
+	})
+
 	r.Get("/json-response-validate-large", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(largeDataValidate)

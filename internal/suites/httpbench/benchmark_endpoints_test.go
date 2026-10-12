@@ -183,10 +183,11 @@ func setupBenchmarkRouter() gofi.Router {
 
 	// JSON response
 	mux.Get("/json-response", gofi.RouteOptions{
+		Schema: &SmallResponseSchema{},
 		Handler: func(c gofi.Context) error {
-			c.Writer().Header().Set("Content-Type", "application/json")
-			b, _ := json.Marshal(data)
-			return c.SendBytes(200, b)
+			response := SmallResponseSchema{}
+			response.Ok.Body = data
+			return c.Send(200, response.Ok)
 		},
 	})
 
@@ -201,10 +202,11 @@ func setupBenchmarkRouter() gofi.Router {
 	})
 
 	mux.Get("/json-response-large", gofi.RouteOptions{
+		Schema: &LargeResponseSchema{},
 		Handler: func(c gofi.Context) error {
-			c.Writer().Header().Set("Content-Type", "application/json")
-			b, _ := json.Marshal(largeData)
-			return c.SendBytes(200, b)
+			response := LargeResponseSchema{}
+			response.Ok.Body = largeData
+			return c.Send(200, response.Ok)
 		},
 	})
 
@@ -219,14 +221,25 @@ func setupBenchmarkRouter() gofi.Router {
 	})
 
 	mux.Get("/json-response-validate-small", gofi.RouteOptions{
+		Schema: &SmallValidateResponseSchema{},
 		Handler: func(c gofi.Context) error {
-			c.Writer().Header().Set("Content-Type", "application/json")
-			b, _ := json.Marshal(utils.SmallPayloadValidate{ID: 1, Name: "test"})
-			return c.SendBytes(200, b)
+			response := SmallValidateResponseSchema{}
+			response.Ok.Body = utils.SmallPayloadValidate{ID: 1, Name: "test"}
+			return c.Send(200, response.Ok)
 		},
 	})
 
 	mux.Post("/json-validate-large", gofi.RouteOptions{
+		Schema: &LargeValidateSchema{},
+		Handler: func(c gofi.Context) error {
+			if err := gofi.Validate(c); err != nil {
+				return c.SendString(400, "Bad")
+			}
+			return c.SendString(200, "OK")
+		},
+	})
+
+	mux.Post("/json-bind-validate-large", gofi.RouteOptions{
 		Schema: &LargeValidateSchema{},
 		Handler: func(c gofi.Context) error {
 			if _, err := gofi.ValidateAndBind[LargeValidateSchema](c); err != nil {
@@ -237,10 +250,11 @@ func setupBenchmarkRouter() gofi.Router {
 	})
 
 	mux.Get("/json-response-validate-large", gofi.RouteOptions{
+		Schema: &LargeValidateResponseSchema{},
 		Handler: func(c gofi.Context) error {
-			c.Writer().Header().Set("Content-Type", "application/json")
-			b, _ := json.Marshal(largeDataValidate)
-			return c.SendBytes(200, b)
+			response := LargeValidateResponseSchema{}
+			response.Ok.Body = largeDataValidate
+			return c.Send(200, response.Ok)
 		},
 	})
 
@@ -398,12 +412,33 @@ func TestBenchmarkEndpoints_JSONValidate(t *testing.T) {
 		assert.Equal(t, "OK", string(ctx.Response.Body()))
 	})
 
+	t.Run("JSON Bind And Validate Large (Valid)", func(t *testing.T) {
+		largeDataValidate := utils.GenerateLargeDataValidate()
+		b, _ := json.Marshal(largeDataValidate)
+
+		ctx := doRequest(mux, "POST", "/json-bind-validate-large", "application/json", b)
+		assert.Equal(t, 200, ctx.Response.StatusCode())
+		assert.Equal(t, "OK", string(ctx.Response.Body()))
+	})
+
 	t.Run("JSON Validate Large (Validation Failure)", func(t *testing.T) {
 		largeDataValidate := utils.GenerateLargeDataValidate()
 		largeDataValidate[0].AccountType = "invalid"
 		b, _ := json.Marshal(largeDataValidate)
 
-		ctx := doRequest(mux, "POST", "/json-validate-large", "application/json", b)
+		ctx := doRequest(mux, "POST", "/json-bind-validate-large", "application/json", b)
+		assert.Equal(t, 400, ctx.Response.StatusCode())
+		assert.Equal(t, "Bad", string(ctx.Response.Body()))
+	})
+
+	t.Run("JSON Bind And Validate Large (Late Deep Failure)", func(t *testing.T) {
+		largeDataValidate := utils.GenerateLargeDataValidate()
+		lastPayload := len(largeDataValidate) - 1
+		lastEvent := len(largeDataValidate[lastPayload].Events) - 1
+		largeDataValidate[lastPayload].Events[lastEvent].Metrics.CPUUsage = 101
+		b, _ := json.Marshal(largeDataValidate)
+
+		ctx := doRequest(mux, "POST", "/json-bind-validate-large", "application/json", b)
 		assert.Equal(t, 400, ctx.Response.StatusCode())
 		assert.Equal(t, "Bad", string(ctx.Response.Body()))
 	})

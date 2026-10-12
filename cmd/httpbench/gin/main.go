@@ -88,6 +88,15 @@ func main() {
 		c.String(200, "OK")
 	})
 
+	r.POST("/json-bind-validate-large", func(c *gin.Context) {
+		var p []utils.LargePayloadValidate
+		if err := c.ShouldBindJSON(&p); err != nil {
+			c.String(400, "Bad")
+			return
+		}
+		c.String(200, "OK")
+	})
+
 	r.GET("/json-response-validate-large", func(c *gin.Context) {
 		c.JSON(200, largeDataValidate)
 	})

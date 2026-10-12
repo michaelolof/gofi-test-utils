@@ -1,10 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"os"
+	"runtime"
+	"runtime/debug"
 
 	"github.com/michaelolof/gofi-test-utils/internal/utils"
 
@@ -59,6 +62,30 @@ type LargeValidateSchema struct {
 	}
 }
 
+type SmallResponseSchema struct {
+	Ok struct {
+		Body []utils.SmallPayload
+	}
+}
+
+type LargeResponseSchema struct {
+	Ok struct {
+		Body []utils.LargePayload
+	}
+}
+
+type SmallValidateResponseSchema struct {
+	Ok struct {
+		Body utils.SmallPayloadValidate
+	}
+}
+
+type LargeValidateResponseSchema struct {
+	Ok struct {
+		Body []utils.LargePayloadValidate
+	}
+}
+
 type FormDataSchema struct {
 	Request struct {
 		FormData utils.SmallPayloadValidate
@@ -83,6 +110,19 @@ type MultipartSchema struct {
 	}
 }
 
+type ws6RuntimeStats struct {
+	HeapAlloc        uint64 `json:"heapAlloc"`
+	HeapInuse        uint64 `json:"heapInuse"`
+	HeapIdle         uint64 `json:"heapIdle"`
+	HeapReleased     uint64 `json:"heapReleased"`
+	TotalAlloc       uint64 `json:"totalAlloc"`
+	NumGC            uint32 `json:"numGC"`
+	PauseTotalNs     uint64 `json:"pauseTotalNs"`
+	LastGCPauseNs    uint64 `json:"lastGCPauseNs"`
+	Goroutines       int    `json:"goroutines"`
+	ForcedCollection bool   `json:"forcedCollection"`
+}
+
 func main() {
 	port := "8080"
 	if p := os.Getenv("PORT"); p != "" {
@@ -95,6 +135,42 @@ func main() {
 	}
 
 	mux := gofi.NewRouter()
+
+	// WS-6 uses this benchmark-only endpoint to observe the server process
+	// after each load phase. It is intentionally not part of Gofi itself.
+	mux.Get("/__ws6/runtime", gofi.RouteOptions{
+		Handler: func(c gofi.Context) error {
+			forced := c.Query("gc") == "1"
+			if forced {
+				runtime.GC()
+				debug.FreeOSMemory()
+			}
+
+			var memory runtime.MemStats
+			runtime.ReadMemStats(&memory)
+			lastPause := uint64(0)
+			if memory.NumGC > 0 {
+				lastPause = memory.PauseNs[(memory.NumGC+255)%256]
+			}
+			payload, err := json.Marshal(ws6RuntimeStats{
+				HeapAlloc:        memory.HeapAlloc,
+				HeapInuse:        memory.HeapInuse,
+				HeapIdle:         memory.HeapIdle,
+				HeapReleased:     memory.HeapReleased,
+				TotalAlloc:       memory.TotalAlloc,
+				NumGC:            memory.NumGC,
+				PauseTotalNs:     memory.PauseTotalNs,
+				LastGCPauseNs:    lastPause,
+				Goroutines:       runtime.NumGoroutine(),
+				ForcedCollection: forced,
+			})
+			if err != nil {
+				return c.SendString(500, "runtime stats unavailable")
+			}
+			c.Writer().Header().Set("Content-Type", "application/json")
+			return c.SendBytes(200, payload)
+		},
+	})
 
 	// Static route
 	mux.Get("/", gofi.RouteOptions{
@@ -150,9 +226,11 @@ func main() {
 
 	// JSON response
 	mux.Get("/json-response", gofi.RouteOptions{
-		Schema: &SmallPayloadSchema{},
+		Schema: &SmallResponseSchema{},
 		Handler: func(c gofi.Context) error {
-			return c.Send(200, data)
+			response := SmallResponseSchema{}
+			response.Ok.Body = data
+			return c.Send(200, response.Ok)
 		},
 	})
 	largeData := utils.GenerateLargeData()
@@ -169,9 +247,11 @@ func main() {
 	})
 
 	mux.Get("/json-response-large", gofi.RouteOptions{
-		Schema: &LargePayloadSchema{},
+		Schema: &LargeResponseSchema{},
 		Handler: func(c gofi.Context) error {
-			return c.Send(200, largeData)
+			response := LargeResponseSchema{}
+			response.Ok.Body = largeData
+			return c.Send(200, response.Ok)
 		},
 	})
 
@@ -186,13 +266,25 @@ func main() {
 	})
 
 	mux.Get("/json-response-validate-small", gofi.RouteOptions{
-		Schema: &SmallValidateSchema{},
+		Schema: &SmallValidateResponseSchema{},
 		Handler: func(c gofi.Context) error {
-			return c.Send(200, utils.SmallPayloadValidate{ID: 1, Name: "test"})
+			response := SmallValidateResponseSchema{}
+			response.Ok.Body = utils.SmallPayloadValidate{ID: 1, Name: "test"}
+			return c.Send(200, response.Ok)
 		},
 	})
 
 	mux.Post("/json-validate-large", gofi.RouteOptions{
+		Schema: &LargeValidateSchema{},
+		Handler: func(c gofi.Context) error {
+			if err := gofi.Validate(c); err != nil {
+				return c.SendString(400, "Bad")
+			}
+			return c.SendString(200, "OK")
+		},
+	})
+
+	mux.Post("/json-bind-validate-large", gofi.RouteOptions{
 		Schema: &LargeValidateSchema{},
 		Handler: func(c gofi.Context) error {
 			if _, err := gofi.ValidateAndBind[LargeValidateSchema](c); err != nil {
@@ -203,9 +295,11 @@ func main() {
 	})
 
 	mux.Get("/json-response-validate-large", gofi.RouteOptions{
-		Schema: &LargeValidateSchema{},
+		Schema: &LargeValidateResponseSchema{},
 		Handler: func(c gofi.Context) error {
-			return c.Send(200, largeDataValidate)
+			response := LargeValidateResponseSchema{}
+			response.Ok.Body = largeDataValidate
+			return c.Send(200, response.Ok)
 		},
 	})
 
