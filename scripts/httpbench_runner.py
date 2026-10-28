@@ -12,6 +12,10 @@ from urllib.request import Request, urlopen
 
 
 ROUTERS = ["gofi", "chi", "echo", "gin", "fiber"]
+# IPv4 loopback for every router: "localhost" resolves to ::1 first, and on
+# macOS the IPv6 loopback carries about half the IPv4 throughput, which
+# penalised whichever servers listen dual-stack.
+HOST = "127.0.0.1"
 PORTS = ["8080", "8081", "8082", "8083", "8084"]
 DURATION = "5s"
 CONNECTIONS = 125
@@ -160,7 +164,7 @@ def preflight(port, endpoint):
         headers["Content-Type"] = endpoint["content_type"]
 
     request = Request(
-        f"http://localhost:{port}{endpoint['url']}",
+        f"http://{HOST}:{port}{endpoint['url']}",
         data=payload,
         headers=headers,
         method=endpoint["method"],
@@ -258,7 +262,7 @@ def main():
                     command.extend(["-H", f"Content-Type: {endpoint['content_type']}"])
                 if endpoint["payload_file"]:
                     command.extend(["-f", endpoint["payload_file"]])
-                command.append(f"http://localhost:{port}{endpoint['url']}")
+                command.append(f"http://{HOST}:{port}{endpoint['url']}")
 
                 output = run_cmd(command)
                 match = re.search(r"Reqs/sec\s+([0-9.,]+)", output)

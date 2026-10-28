@@ -4,21 +4,21 @@ Tests run with `bombardier` for 5s with 125 concurrent connections.
 
 | Endpoint | Method | Gofi | Chi | Echo | Gin | Fiber | Winner |
 |---|---|---|---|---|---|---|---|
-| Static Route | `GET /` | **141332.22** | 68329.86 | 58302.22 | 61392.13 | 57092.95 | **Gofi** |
-| Single Param | `GET /user/gordon` | **112395.78** | 52291.67 | 47728.93 | 54295.24 | 79252.09 | **Gofi** |
-| Multi Param | `GET /users/123/posts/456` | **105706.25** | 48480.21 | 36796.50 | 42286.80 | 81717.65 | **Gofi** |
-| Middleware Chain | `GET /middlewares` | **110025.93** | 50568.93 | 35022.34 | 46435.84 | 80550.87 | **Gofi** |
-| Query Processing | `GET /query?q=searchterm&limit=10` | **109942.90** | 47509.03 | 42856.23 | 33165.00 | 68965.49 | **Gofi** |
-| JSON Bind (Small) | `POST /json` | **70413.51** | 44200.96 | 38075.01 | 31825.67 | 53300.48 | **Gofi** |
-| JSON Response (Small) | `GET /json-response` | 16081.01 | **34941.64** | 33898.32 | 20676.61 | 33968.22 | **Chi** |
-| JSON Bind Only (Large) | `POST /json-large` | **8392.36** | 2970.93 | 2709.71 | 1569.07 | 2279.83 | **Gofi** |
-| JSON Response (Large) | `GET /json-response-large` | 3129.07 | **7754.84** | 6896.08 | 3678.61 | 6456.05 | **Chi** |
-| JSON Bind + Validate (Small) | `POST /json-validate-small` | **66418.09** | 36722.44 | 34033.99 | 22562.12 | 60081.61 | **Gofi** |
-| JSON Validate Response (Small) | `GET /json-response-validate-small` | **88274.83** | 43642.14 | 44935.27 | 30525.16 | 78093.73 | **Gofi** |
-| JSON Validate Only (Large) | `POST /json-validate-large` | **6217.02** | 1833.66 | 1863.60 | 1329.64 | 1594.23 | **Gofi** |
-| JSON Bind + Validate (Large) | `POST /json-bind-validate-large` | **3992.22** | 1802.60 | 1689.13 | 1475.38 | 1366.42 | **Gofi** |
-| JSON Validation Failure (Early) | `POST /json-bind-validate-large` | **17388.21** | 2471.84 | 2186.93 | 1581.07 | 1736.78 | **Gofi** |
-| JSON Validation Failure (Late/Deep) | `POST /json-bind-validate-large` | **3969.21** | 1539.31 | 1479.64 | 1587.38 | 1002.82 | **Gofi** |
-| JSON Validate Response (Large) | `GET /json-response-validate-large` | 2173.98 | **6810.10** | 6429.45 | 5180.94 | 4571.70 | **Chi** |
-| Multipart Bind | `POST /multipart` | **49733.53** | 24716.94 | 25160.94 | 15925.07 | 20612.76 | **Gofi** |
-| FormData Bind | `POST /formdata` | **84185.71** | 32410.88 | 36514.42 | 22264.71 | 37633.94 | **Gofi** |
+| Static Route | `GET /` | **183482.30** | 176701.84 | 175154.15 | 175827.79 | 182662.57 | **Gofi** |
+| Single Param | `GET /user/gordon` | **183883.02** | 176055.42 | 176123.81 | 179194.77 | 182661.71 | **Gofi** |
+| Multi Param | `GET /users/123/posts/456` | 183031.66 | 175497.80 | 175491.64 | 175773.62 | **183659.83** | **Fiber** |
+| Middleware Chain | `GET /middlewares` | **183837.66** | 177806.13 | 175750.74 | 176163.59 | 183015.17 | **Gofi** |
+| Query Processing | `GET /query?q=searchterm&limit=10` | **183402.66** | 173711.74 | 173788.03 | 169407.78 | 182200.37 | **Gofi** |
+| JSON Bind (Small) | `POST /json` | 181703.38 | 173938.66 | 171072.35 | 171914.02 | **182680.17** | **Fiber** |
+| JSON Response (Small) | `GET /json-response` | 86988.86 | 160833.83 | 164403.78 | 148352.05 | **172712.90** | **Fiber** |
+| JSON Bind Only (Large) | `POST /json-large` | **43026.26** | 26438.29 | 26457.29 | 25634.28 | 38902.83 | **Gofi** |
+| JSON Response (Large) | `GET /json-response-large` | 18827.80 | 62061.17 | **63716.05** | 46334.14 | 62884.56 | **Echo** |
+| JSON Bind + Validate (Small) | `POST /json-validate-small` | 182675.22 | 173819.36 | 170556.35 | 172389.71 | **183441.79** | **Fiber** |
+| JSON Validate Response (Small) | `GET /json-response-validate-small` | 182904.74 | 173250.08 | 175253.01 | 175518.49 | **183540.00** | **Fiber** |
+| JSON Validate Only (Large) | `POST /json-validate-large` | **37426.21** | 15861.35 | 15591.46 | 15864.84 | 20068.15 | **Gofi** |
+| JSON Bind + Validate (Large) | `POST /json-bind-validate-large` | **25556.15** | 15774.91 | 15640.91 | 15868.30 | 20062.60 | **Gofi** |
+| JSON Validation Failure (Early) | `POST /json-bind-validate-large` | **85706.76** | 24668.39 | 24516.60 | 15818.00 | 34793.43 | **Gofi** |
+| JSON Validation Failure (Late/Deep) | `POST /json-bind-validate-large` | **26211.28** | 15466.58 | 15441.76 | 15609.22 | 19809.29 | **Gofi** |
+| JSON Validate Response (Large) | `GET /json-response-validate-large` | 15932.32 | 61484.77 | **62157.16** | 45185.66 | 58795.93 | **Echo** |
+| Multipart Bind | `POST /multipart` | **178506.50** | 135954.81 | 137357.17 | 138073.11 | 172044.16 | **Gofi** |
+| FormData Bind | `POST /formdata` | **183490.78** | 165997.45 | 163199.06 | 166049.95 | 182909.93 | **Gofi** |

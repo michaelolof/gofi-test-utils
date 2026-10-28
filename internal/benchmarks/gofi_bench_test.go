@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"strings"
 	"testing"
 
 	"github.com/michaelolof/gofi"
@@ -33,6 +34,17 @@ var gofiNoopMiddleware gofi.MiddlewareFunc = func(c gofi.Context) error {
 
 func benchDoGofiTest(router gofi.Router, method, path string) {
 	_, _ = router.Test(gofi.TestOptions{Method: method, Path: path})
+}
+
+// benchDoGofiJSON sends the same small JSON payload the other routers' bind
+// benchmarks send.
+func benchDoGofiJSON(router gofi.Router, payload string) {
+	_, _ = router.Test(gofi.TestOptions{
+		Method:  "POST",
+		Path:    "/",
+		Headers: map[string]string{"Content-Type": "application/json"},
+		Body:    strings.NewReader(payload),
+	})
 }
 
 // benchGofiRequest measures routing performance for a single request (Gofi — fasthttp).
@@ -397,7 +409,7 @@ func BenchmarkGofi_BindJSON_Small(b *testing.B) {
 	b.StartTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		benchDoGofiTest(r, "POST", "/")
+		benchDoGofiJSON(r, `{"id": 1, "name": "test"}`)
 	}
 }
 
@@ -418,7 +430,7 @@ func BenchmarkGofiS_BindJSON_Small(b *testing.B) {
 	b.StartTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		benchDoGofiTest(r, "POST", "/")
+		benchDoGofiJSON(r, `{"id": 1, "name": "test"}`)
 	}
 }
 
