@@ -343,5 +343,7 @@ func TestInject_PanicDefaultErrorHandler(t *testing.T) {
 	assert.Nil(t, decodeErr)
 	assert.Equal(t, "error", resp.Status)
 	assert.Equal(t, 500, resp.StatusCode)
-	assert.Equal(t, "panic recovered in Inject: default inject panic", resp.Message)
+	// The panic value is returned in err, never in the response body.
+	assert.Equal(t, "Internal Server Error", resp.Message)
+	assert.Contains(t, err.Error(), "default inject panic")
 }

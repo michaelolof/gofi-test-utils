@@ -70,12 +70,12 @@ func TestValidation_Misc(t *testing.T) {
 		{
 			name:       "invalid boolean",
 			body:       `{"boolean": "invalid"}`,
-			expectCode: 500,
+			expectCode: 400,
 		},
 		{
 			name:       "invalid datetime",
 			body:       `{"datetime": "2023-10-27 10:00:00"}`,
-			expectCode: 500,
+			expectCode: 400,
 		},
 	}
 

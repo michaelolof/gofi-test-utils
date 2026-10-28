@@ -34,7 +34,8 @@ func TestErrorHandler_Default(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "error", resp.Status)
 	assert.Equal(t, 500, resp.StatusCode)
-	assert.Equal(t, "something went wrong", resp.Message)
+	// 5xx messages are generic so internal error text never reaches clients.
+	assert.Equal(t, "Internal Server Error", resp.Message)
 }
 
 // =============================================================================

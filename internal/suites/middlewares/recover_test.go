@@ -60,7 +60,7 @@ func TestRecover(t *testing.T) {
 	if err := json.Unmarshal(resp.Body, &body); err != nil {
 		t.Fatalf("Expected JSON error response, got error: %v body: %s", err, string(resp.Body))
 	}
-	if body.Status != "error" || body.StatusCode != 500 || body.Message != "panic recovered: something went wrong" {
+	if body.Status != "error" || body.StatusCode != 500 || body.Message != "Internal Server Error" {
 		t.Fatalf("Unexpected error response: %+v", body)
 	}
 
@@ -141,14 +141,18 @@ func TestRecoverForwardsPanicToRouterErrorHandler(t *testing.T) {
 	if resp.StatusCode != 555 {
 		t.Fatalf("Expected custom status code 555, got %d", resp.StatusCode)
 	}
-	if string(resp.Body) != "custom:panic recovered: boom" {
+	// The panic value is logged, never passed on where it could reach clients.
+	if string(resp.Body) != "custom:Internal Server Error" {
 		t.Fatalf("Expected custom body, got %s", string(resp.Body))
 	}
 	if capturedErr == nil {
 		t.Fatal("Expected router error handler to receive recovered panic error")
 	}
-	if capturedErr.Error() != "panic recovered: boom" {
+	if capturedErr.Error() != "Internal Server Error" {
 		t.Fatalf("Unexpected captured error: %v", capturedErr)
+	}
+	if !strings.Contains(out.String(), "panic recovered: boom") {
+		t.Errorf("Expected panic log, got: %s", out.String())
 	}
 }
 

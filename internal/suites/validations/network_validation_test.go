@@ -66,12 +66,12 @@ func TestValidation_Network(t *testing.T) {
 		{
 			name:       "invalid ip",
 			body:       `{"ip": "invalid"}`,
-			expectCode: 500,
+			expectCode: 400,
 		},
 		{
 			name:       "invalid url",
 			body:       `{"url": "invalid"}`,
-			expectCode: 500,
+			expectCode: 400,
 		},
 	}
 

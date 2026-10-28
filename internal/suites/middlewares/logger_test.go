@@ -47,8 +47,8 @@ func TestLogger(t *testing.T) {
 		t.Errorf("Expected /log-test in output, got: %s", output)
 	}
 
-	// Since there is no X-Forwarded-For in the mock test, it defaults to 'unknown'
-	if !strings.Contains(output, "unknown") {
-		t.Errorf("Expected 'unknown' for IP in output, got: %s", output)
+	// The logged IP is the socket peer; forwarding headers need a TrustPolicy.
+	if !strings.Contains(output, "0.0.0.0") {
+		t.Errorf("Expected the peer IP in output, got: %s", output)
 	}
 }

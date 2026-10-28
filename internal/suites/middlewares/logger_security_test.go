@@ -23,12 +23,10 @@ func TestLogger_SanitizesControlCharacters(t *testing.T) {
 		},
 	})
 
+	// The logged path is decoded, so escapes put raw control characters in it.
 	_, err := app.Inject(gofi.InjectOptions{
-		Method: "GET",
-		Path:   "/log-sec",
-		Headers: map[string]string{
-			"X-Forwarded-For": "10.0.0.1\nINJECT\r\tEND",
-		},
+		Method:  "GET",
+		Path:    "/log-sec%0AINJECT%0D%09END",
 		Handler: &handler,
 	})
 	if err != nil {
@@ -36,6 +34,9 @@ func TestLogger_SanitizesControlCharacters(t *testing.T) {
 	}
 
 	output := out.String()
+	if !strings.Contains(output, "INJECT") {
+		t.Fatalf("expected the request path in the log, got %q", output)
+	}
 	if strings.Contains(output, "\nINJECT") || strings.Contains(output, "\r") || strings.Contains(output, "\t") {
 		t.Fatalf("expected log output to sanitize control chars, got %q", output)
 	}

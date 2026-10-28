@@ -12,10 +12,10 @@ import (
 func TestCacheMiddleware(t *testing.T) {
 	app := gofi.NewRouter()
 
-	app.Use(middleware.Cache(middleware.CacheConfig{
+	app.Use(must(middleware.Cache(middleware.CacheConfig{
 		Expiration:  100 * time.Millisecond,
 		CacheHeader: true,
-	}))
+	})))
 
 	counter := 0
 
@@ -55,9 +55,9 @@ func TestCacheMiddleware(t *testing.T) {
 func TestCacheNotSupportedMethod(t *testing.T) {
 	app := gofi.NewRouter()
 
-	app.Use(middleware.Cache(middleware.CacheConfig{
+	app.Use(must(middleware.Cache(middleware.CacheConfig{
 		Expiration: 1 * time.Minute,
-	}))
+	})))
 
 	counter := 0
 

@@ -16,3 +16,11 @@ func mustTest(t *testing.T, router gofi.Router, method, path string) *gofi.Injec
 
 	return resp
 }
+
+// must unwraps a middleware constructor that takes a validated config.
+func must(mw gofi.MiddlewareFunc, err error) gofi.MiddlewareFunc {
+	if err != nil {
+		panic(err)
+	}
+	return mw
+}

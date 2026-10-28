@@ -18,9 +18,10 @@ func TestTimeoutConfig(t *testing.T) {
 		_ = c.SendString(408, "Request Timeout")
 	})
 
-	app.Use(middleware.Timeout(middleware.TimeoutConfig{
-		Timeout: 50 * time.Millisecond,
-	}))
+	app.Use(must(middleware.Timeout(middleware.TimeoutConfig{
+		MaxInFlight: 16,
+		Timeout:     50 * time.Millisecond,
+	})))
 
 	app.Get("/fast", gofi.RouteOptions{
 		Handler: func(c gofi.Context) error {
@@ -64,8 +65,9 @@ func TestTimeoutConfig(t *testing.T) {
 	if capturedErr == nil {
 		t.Fatal("Expected router error handler to receive timeout error")
 	}
-	if capturedErr.Error() != "request timeout" {
-		t.Fatalf("Expected 'request timeout' error, got %v", capturedErr)
+	// The default timeout error is a 503: the server, not the client, was slow.
+	if capturedErr.Error() != "Service Unavailable" {
+		t.Fatalf("Expected 'Service Unavailable' error, got %v", capturedErr)
 	}
 }
 
@@ -78,12 +80,13 @@ func TestTimeoutCanHandleLocally(t *testing.T) {
 		_ = c.SendString(500, err.Error())
 	})
 
-	app.Use(middleware.Timeout(middleware.TimeoutConfig{
-		Timeout: 20 * time.Millisecond,
+	app.Use(must(middleware.Timeout(middleware.TimeoutConfig{
+		MaxInFlight: 16,
+		Timeout:     20 * time.Millisecond,
 		ErrorHandler: func(c gofi.Context) error {
 			return c.SendString(418, "timeout handled locally")
 		},
-	}))
+	})))
 
 	app.Get("/slow", gofi.RouteOptions{
 		Handler: func(c gofi.Context) error {

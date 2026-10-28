@@ -64,7 +64,7 @@ func TestValidation_Hashes(t *testing.T) {
 				"tiger160": "3293ac630c13f0245f92bbb1766e16167a4e5849",
 				"tiger192": "3293ac630c13f0245f92bbb1766e16167a4e58492dde73f3"
 			}`,
-			expectCode: 500,
+			expectCode: 400,
 		},
 	}
 

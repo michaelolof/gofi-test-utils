@@ -50,47 +50,47 @@ func TestValidation_Comparison(t *testing.T) {
 		{
 			name:       "invalid eq",
 			body:       `{"eq_value": 11, "ne_value": 11, "gt_value": 11, "gte_value": 10, "lt_value": 9, "lte_value": 10, "len_value": "abcde", "one_of": "a", "required": "present"}`,
-			expectCode: 500,
+			expectCode: 400,
 		},
 		{
 			name:       "invalid ne",
 			body:       `{"eq_value": 10, "ne_value": 10, "gt_value": 11, "gte_value": 10, "lt_value": 9, "lte_value": 10, "len_value": "abcde", "one_of": "a", "required": "present"}`,
-			expectCode: 500,
+			expectCode: 400,
 		},
 		{
 			name:       "invalid gt",
 			body:       `{"eq_value": 10, "ne_value": 11, "gt_value": 10, "gte_value": 10, "lt_value": 9, "lte_value": 10, "len_value": "abcde", "one_of": "a", "required": "present"}`,
-			expectCode: 500,
+			expectCode: 400,
 		},
 		{
 			name:       "invalid gte",
 			body:       `{"eq_value": 10, "ne_value": 11, "gt_value": 11, "gte_value": 9, "lt_value": 9, "lte_value": 10, "len_value": "abcde", "one_of": "a", "required": "present"}`,
-			expectCode: 500,
+			expectCode: 400,
 		},
 		{
 			name:       "invalid lt",
 			body:       `{"eq_value": 10, "ne_value": 11, "gt_value": 11, "gte_value": 10, "lt_value": 10, "lte_value": 10, "len_value": "abcde", "one_of": "a", "required": "present"}`,
-			expectCode: 500,
+			expectCode: 400,
 		},
 		{
 			name:       "invalid lte",
 			body:       `{"eq_value": 10, "ne_value": 11, "gt_value": 11, "gte_value": 10, "lt_value": 9, "lte_value": 11, "len_value": "abcde", "one_of": "a", "required": "present"}`,
-			expectCode: 500,
+			expectCode: 400,
 		},
 		{
 			name:       "invalid len",
 			body:       `{"eq_value": 10, "ne_value": 11, "gt_value": 11, "gte_value": 10, "lt_value": 9, "lte_value": 10, "len_value": "abcd", "one_of": "a", "required": "present"}`,
-			expectCode: 500,
+			expectCode: 400,
 		},
 		{
 			name:       "invalid oneof",
 			body:       `{"eq_value": 10, "ne_value": 11, "gt_value": 11, "gte_value": 10, "lt_value": 9, "lte_value": 10, "len_value": "abcde", "one_of": "d", "required": "present"}`,
-			expectCode: 500,
+			expectCode: 400,
 		},
 		{
 			name:       "missing required",
 			body:       `{"eq_value": 10, "ne_value": 11, "gt_value": 11, "gte_value": 10, "lt_value": 9, "lte_value": 10, "len_value": "abcde", "one_of": "a"}`,
-			expectCode: 500,
+			expectCode: 400,
 		},
 	}
 

@@ -10,7 +10,7 @@ import (
 func TestCORS_Basic(t *testing.T) {
 	app := gofi.NewRouter()
 
-	app.Use(middleware.CORS())
+	app.Use(must(middleware.CORS(middleware.CORSConfig{AllowOrigins: "*"})))
 
 	app.Get("/cors", gofi.RouteOptions{
 		Handler: func(c gofi.Context) error {
@@ -46,13 +46,13 @@ func TestCORS_Basic(t *testing.T) {
 func TestCORS_PreflightAndConfig(t *testing.T) {
 	app := gofi.NewRouter()
 
-	app.Use(middleware.CORS(middleware.CORSConfig{
+	app.Use(must(middleware.CORS(middleware.CORSConfig{
 		AllowOrigins:     "https://foo.com, https://bar.com",
 		AllowMethods:     "GET, POST",
 		AllowCredentials: true,
 		AllowHeaders:     "Accept, Content-Type, X-My-Header",
 		ExposeHeaders:    "X-My-Custom",
-	}))
+	})))
 
 	// Test case 1: Disallowed Origin should not get headers
 	req1, _ := app.Inject(gofi.InjectOptions{
@@ -68,9 +68,10 @@ func TestCORS_PreflightAndConfig(t *testing.T) {
 
 	// Test case 2: Preflight OPTIONS request
 	req2, _ := app.Inject(gofi.InjectOptions{
-		Method:  "OPTIONS",
-		Path:    "/",
-		Headers: map[string]string{"Origin": "https://foo.com"},
+		Method: "OPTIONS",
+		Path:   "/",
+		// A preflight carries Access-Control-Request-Method; a bare OPTIONS is not one.
+		Headers: map[string]string{"Origin": "https://foo.com", "Access-Control-Request-Method": "POST"},
 		Handler: &gofi.RouteOptions{Handler: func(c gofi.Context) error { return nil }},
 	})
 

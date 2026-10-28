@@ -24,7 +24,6 @@ func TestWebSocketEcho(t *testing.T) {
 					return err
 				}
 			}
-			return nil
 		}),
 	})
 

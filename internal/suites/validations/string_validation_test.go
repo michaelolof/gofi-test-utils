@@ -69,17 +69,17 @@ func TestValidation_StringsExhaustive(t *testing.T) {
 		{
 			name:       "invalid email",
 			body:       `{"email": "not-an-email"}`,
-			expectCode: 500,
+			expectCode: 400,
 		},
 		{
 			name:       "invalid uuid",
 			body:       `{"uuid": "not-a-uuid"}`,
-			expectCode: 500,
+			expectCode: 400,
 		},
 		{
 			name:       "invalid semver",
 			body:       `{"semver": "1.2"}`,
-			expectCode: 500,
+			expectCode: 400,
 		},
 	}
 

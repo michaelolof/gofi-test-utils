@@ -43,27 +43,27 @@ func TestValidation_NumericAndGeo(t *testing.T) {
 		{
 			name:       "invalid numeric",
 			body:       `{"numeric": "123a", "number": "123", "hex": "abc", "latitude": "0", "longitude": "0"}`,
-			expectCode: 500,
+			expectCode: 400,
 		},
 		{
 			name:       "invalid number",
 			body:       `{"numeric": "123", "number": "123.a", "hex": "abc", "latitude": "0", "longitude": "0"}`,
-			expectCode: 500,
+			expectCode: 400,
 		},
 		{
 			name:       "invalid hexadecimal",
 			body:       `{"numeric": "123", "number": "123", "hex": "ghi", "latitude": "0", "longitude": "0"}`,
-			expectCode: 500,
+			expectCode: 400,
 		},
 		{
 			name:       "invalid latitude",
 			body:       `{"numeric": "123", "number": "123", "hex": "abc", "latitude": "91", "longitude": "0"}`,
-			expectCode: 500,
+			expectCode: 400,
 		},
 		{
 			name:       "invalid longitude",
 			body:       `{"numeric": "123", "number": "123", "hex": "abc", "latitude": "0", "longitude": "181"}`,
-			expectCode: 500,
+			expectCode: 400,
 		},
 	}
 
