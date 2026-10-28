@@ -31,26 +31,26 @@ python3 ./scripts/httpbench_runner.py
 
 | Case | Endpoint | Gofi (fasthttp) | Fiber (fasthttp) | Chi (net/http) | Gin (net/http) | Echo (net/http) | Winner |
 |---|---|---|---|---|---|---|---|
-| Static Route | `GET /` | **183,482** | **182,663** | 176,702 | 175,828 | 175,154 | Tie (Gofi, Fiber) |
-| Single Param | `GET /user/gordon` | **183,883** | **182,662** | 176,055 | 179,195 | 176,124 | Tie (Gofi, Fiber) |
-| Multi Param | `GET /users/123/posts/456` | **183,032** | **183,660** | 175,498 | 175,774 | 175,492 | Tie (Gofi, Fiber) |
-| Middleware Chain | `GET /middlewares` | **183,838** | **183,015** | 177,806 | 176,164 | 175,751 | Tie (Gofi, Fiber) |
-| Query Processing | `GET /query?q=searchterm&limit=10` | **183,403** | **182,200** | 173,712 | 169,408 | 173,788 | Tie (Gofi, Fiber) |
-| JSON Bind (Small) | `POST /json` | **181,703** | **182,680** | 173,939 | 171,914 | 171,072 | Tie (Gofi, Fiber) |
-| JSON Response (Small) | `GET /json-response` | 86,989 | **172,713** | 160,834 | 148,352 | 164,404 | 🏆 **Fiber** |
-| JSON Bind Only (Large) | `POST /json-large` | **43,026** | 38,903 | 26,438 | 25,634 | 26,457 | 🏆 **Gofi** |
-| JSON Response (Large) | `GET /json-response-large` | 18,828 | **62,885** | 62,061 | 46,334 | **63,716** | Tie (Fiber, Echo) |
-| JSON Bind + Validate (Small) | `POST /json-validate-small` | **182,675** | **183,442** | 173,819 | 172,390 | 170,556 | Tie (Gofi, Fiber) |
-| JSON Validate Response (Small) | `GET /json-response-validate-small` | **182,905** | **183,540** | 173,250 | 175,518 | 175,253 | Tie (Gofi, Fiber) |
-| JSON Validate Only (Large) | `POST /json-validate-large` | **37,426** | 20,068 | 15,861 | 15,865 | 15,591 | 🏆 **Gofi** |
-| JSON Bind + Validate (Large) | `POST /json-bind-validate-large` | **25,556** | 20,063 | 15,775 | 15,868 | 15,641 | 🏆 **Gofi** |
-| JSON Validation Failure (Early) | `POST /json-bind-validate-large` | **85,707** | 34,793 | 24,668 | 15,818 | 24,517 | 🏆 **Gofi** |
-| JSON Validation Failure (Late/Deep) | `POST /json-bind-validate-large` | **26,211** | 19,809 | 15,467 | 15,609 | 15,442 | 🏆 **Gofi** |
-| JSON Validate Response (Large) | `GET /json-response-validate-large` | 15,932 | 58,796 | **61,485** | 45,186 | **62,157** | Tie (Chi, Echo) |
-| Multipart Bind | `POST /multipart` | **178,506** | 172,044 | 135,955 | 138,073 | 137,357 | 🏆 **Gofi** |
-| FormData Bind | `POST /formdata` | **183,491** | **182,910** | 165,997 | 166,050 | 163,199 | Tie (Gofi, Fiber) |
+| Static Route | `GET /` | **182,132** | **182,936** | 177,707 | 175,759 | 175,235 | Tie (Gofi, Fiber) |
+| Single Param | `GET /user/gordon` | **183,237** | **183,499** | 175,923 | 179,416 | 176,035 | Tie (Gofi, Fiber) |
+| Multi Param | `GET /users/123/posts/456` | **183,126** | **183,517** | 176,021 | 176,327 | 176,024 | Tie (Gofi, Fiber) |
+| Middleware Chain | `GET /middlewares` | **183,677** | **182,817** | 177,522 | 176,519 | 172,736 | Tie (Gofi, Fiber) |
+| Query Processing | `GET /query?q=searchterm&limit=10` | **184,330** | **183,221** | 173,712 | 173,003 | 173,112 | Tie (Gofi, Fiber) |
+| JSON Bind (Small) | `POST /json` | **180,901** | **182,530** | 174,090 | 172,370 | 170,566 | Tie (Gofi, Fiber) |
+| JSON Response (Small) | `GET /json-response` | **180,966** | 171,507 | 160,047 | 146,454 | 163,378 | 🏆 **Gofi** |
+| JSON Bind Only (Large) | `POST /json-large` | **42,619** | 38,403 | 26,243 | 25,364 | 26,203 | 🏆 **Gofi** |
+| JSON Response (Large) | `GET /json-response-large` | **84,072** | 57,795 | 61,253 | 45,612 | 63,976 | 🏆 **Gofi** |
+| JSON Bind + Validate (Small) | `POST /json-validate-small` | **182,737** | **182,729** | 172,762 | 172,405 | 171,504 | Tie (Gofi, Fiber) |
+| JSON Validate Response (Small) | `GET /json-response-validate-small` | **183,160** | **183,251** | 172,393 | 174,757 | 174,860 | Tie (Gofi, Fiber) |
+| JSON Validate Only (Large) | `POST /json-validate-large` | **37,630** | 20,143 | 15,714 | 15,545 | 15,510 | 🏆 **Gofi** |
+| JSON Bind + Validate (Large) | `POST /json-bind-validate-large` | **26,045** | 19,825 | 15,529 | 15,499 | 15,340 | 🏆 **Gofi** |
+| JSON Validation Failure (Early) | `POST /json-bind-validate-large` | **84,954** | 34,758 | 24,456 | 15,438 | 24,206 | 🏆 **Gofi** |
+| JSON Validation Failure (Late/Deep) | `POST /json-bind-validate-large` | **25,890** | 19,811 | 15,404 | 15,448 | 15,242 | 🏆 **Gofi** |
+| JSON Validate Response (Large) | `GET /json-response-validate-large` | **47,902** | 24,241 | 21,903 | 19,729 | 21,638 | 🏆 **Gofi** |
+| Multipart Bind | `POST /multipart` | **178,818** | 173,716 | 135,448 | 138,348 | 136,260 | 🏆 **Gofi** |
+| FormData Bind | `POST /formdata` | **182,676** | **182,940** | 166,609 | 166,478 | 164,727 | Tie (Gofi, Fiber) |
 
-Results within 2% of the best are a tie. Requests with small bodies saturate the `bombardier` client at about 180k req/s on this machine, so those rows show the client limit rather than a difference between routers.
+Results within 2% of the best are a tie. Requests with small bodies saturate the `bombardier` client at about 180k req/s on this machine, so those rows show the client limit rather than a difference between routers. The validated-response endpoints validate the payload before encoding it in every router.
 
 For full details, see the generated `httpbench-results.md`.
 

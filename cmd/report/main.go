@@ -231,7 +231,7 @@ func writeResults(w io.Writer, data ParsedData) {
 		{"Middleware ×10", "Middleware10", noSchema},
 		{"Middleware ×20", "Middleware20", noSchema},
 		{"JSON Bind", "BindJSON_Small", []string{"Gofi", "GofiS", "Chi", "ChiS", "Echo", "EchoS", "Gin", "GinS", "Fiber", "FiberS"}},
-		{"JSON Response", "JSONResponse_Large", noSchema},
+		{"JSON Response", "JSONResponse_Large", []string{"Gofi", "GofiS", "Chi", "Echo", "Gin", "Fiber"}},
 		{"Parallel", "Parallel", noSchema},
 		{"Route Groups", "RouteGroup", noSchema},
 	}

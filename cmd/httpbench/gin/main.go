@@ -9,6 +9,7 @@ import (
 	"github.com/michaelolof/gofi-test-utils/internal/utils"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 func main() {
@@ -76,7 +77,12 @@ func main() {
 	})
 
 	r.GET("/json-response-validate-small", func(c *gin.Context) {
-		c.JSON(200, utils.SmallPayloadValidate{ID: 1, Name: "test"})
+		p := utils.SmallPayloadValidate{ID: 1, Name: "test"}
+		if err := binding.Validator.ValidateStruct(p); err != nil {
+			c.String(500, "Bad")
+			return
+		}
+		c.JSON(200, p)
 	})
 
 	r.POST("/json-validate-large", func(c *gin.Context) {
@@ -98,6 +104,10 @@ func main() {
 	})
 
 	r.GET("/json-response-validate-large", func(c *gin.Context) {
+		if err := binding.Validator.ValidateStruct(largeDataValidate); err != nil {
+			c.String(500, "Bad")
+			return
+		}
 		c.JSON(200, largeDataValidate)
 	})
 

@@ -84,8 +84,13 @@ func main() {
 	})
 
 	r.Get("/json-response-validate-small", func(w http.ResponseWriter, r *http.Request) {
+		p := utils.SmallPayloadValidate{ID: 1, Name: "test"}
+		if err := validate.Struct(p); err != nil {
+			http.Error(w, "Bad", 500)
+			return
+		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(utils.SmallPayloadValidate{ID: 1, Name: "test"})
+		json.NewEncoder(w).Encode(p)
 	})
 
 	r.Post("/json-validate-large", func(w http.ResponseWriter, r *http.Request) {
@@ -119,6 +124,12 @@ func main() {
 	})
 
 	r.Get("/json-response-validate-large", func(w http.ResponseWriter, r *http.Request) {
+		for _, item := range largeDataValidate {
+			if err := validate.Struct(item); err != nil {
+				http.Error(w, "Bad", 500)
+				return
+			}
+		}
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(largeDataValidate)
 	})

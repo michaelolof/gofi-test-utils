@@ -89,7 +89,11 @@ func main() {
 	})
 
 	e.GET("/json-response-validate-small", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, utils.SmallPayloadValidate{ID: 1, Name: "test"})
+		p := utils.SmallPayloadValidate{ID: 1, Name: "test"}
+		if err := c.Validate(p); err != nil {
+			return c.String(500, "Bad")
+		}
+		return c.JSON(http.StatusOK, p)
 	})
 
 	e.POST("/json-validate-large", func(c echo.Context) error {
@@ -119,6 +123,11 @@ func main() {
 	})
 
 	e.GET("/json-response-validate-large", func(c echo.Context) error {
+		for _, item := range largeDataValidate {
+			if err := c.Validate(item); err != nil {
+				return c.String(500, "Bad")
+			}
+		}
 		return c.JSON(http.StatusOK, largeDataValidate)
 	})
 

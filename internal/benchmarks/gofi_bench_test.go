@@ -457,6 +457,38 @@ func BenchmarkGofi_JSONResponse_Large(b *testing.B) {
 	}
 }
 
+type jsonResponseSchema struct {
+	Ok struct {
+		Body []SmallPayload
+	}
+}
+
+// BenchmarkGofiS_JSONResponse_Large encodes the same data through the schema
+// response encoder (c.Send), which is how gofi handlers normally respond.
+func BenchmarkGofiS_JSONResponse_Large(b *testing.B) {
+	b.StopTimer()
+	data := make([]SmallPayload, 100)
+	for i := 0; i < 100; i++ {
+		data[i] = SmallPayload{ID: i, Name: fmt.Sprintf("Item %d", i)}
+	}
+
+	r := gofi.NewRouter()
+	r.Get("/", gofi.RouteOptions{
+		Schema: &jsonResponseSchema{},
+		Handler: func(c gofi.Context) error {
+			var s jsonResponseSchema
+			s.Ok.Body = data
+			return c.Send(200, s.Ok)
+		},
+	})
+
+	b.StartTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		benchDoGofiTest(r, "GET", "/")
+	}
+}
+
 // =============================================================================
 // 4. CONCURRENCY (Gofi)
 // =============================================================================

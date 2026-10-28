@@ -76,7 +76,11 @@ func main() {
 	})
 
 	app.Get("/json-response-validate-small", func(c *fiber.Ctx) error {
-		return c.JSON(utils.SmallPayloadValidate{ID: 1, Name: "test"})
+		p := utils.SmallPayloadValidate{ID: 1, Name: "test"}
+		if err := validate.Struct(p); err != nil {
+			return c.Status(500).SendString("Bad")
+		}
+		return c.JSON(p)
 	})
 
 	app.Post("/json-validate-large", func(c *fiber.Ctx) error {
@@ -106,6 +110,11 @@ func main() {
 	})
 
 	app.Get("/json-response-validate-large", func(c *fiber.Ctx) error {
+		for _, item := range largeDataValidate {
+			if err := validate.Struct(item); err != nil {
+				return c.Status(500).SendString("Bad")
+			}
+		}
 		return c.JSON(largeDataValidate)
 	})
 
