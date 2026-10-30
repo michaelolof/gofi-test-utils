@@ -16,7 +16,7 @@ func main() {
 			Header struct {
 				ContentType string `json:"content-type" default:"text/event-stream"`
 			}
-			Body string `validate:"required" pattern:"event-stream"`
+			Body string `validate:"required"`
 		}
 	}
 

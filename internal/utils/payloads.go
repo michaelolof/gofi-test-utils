@@ -66,6 +66,29 @@ type LargePayloadValidate struct {
 	Metadata    map[string]string     `json:"metadata" validate:"omitempty,max=10,dive,keys,required,endkeys,required,max=255" binding:"omitempty,max=10,dive,keys,required,endkeys,required,max=255"`
 }
 
+// EventRecordGofi and LargePayloadGofi carry the constraints of
+// EventRecordValidate and LargePayloadValidate in Gofi's rule syntax. Gofi
+// validates nested structs through their own tags, so it has no dive or
+// keys rules, and min/max on a slice or map limit its length. Per-element
+// string lengths (dive,min=2,max=30 on Tags) have no Gofi equivalent.
+type EventRecordGofi struct {
+	EventID   string                `json:"eventId" validate:"required,alphanum"`
+	Timestamp time.Time             `json:"timestamp" validate:"required"`
+	Tags      []string              `json:"tags" validate:"omitempty,max=5"`
+	Metrics   NestedMetricsValidate `json:"metrics" validate:"required"`
+}
+
+type LargePayloadGofi struct {
+	ID          string            `json:"id" validate:"required,uuid4"`
+	UserID      int               `json:"userId" validate:"required,gte=1,lte=999999"`
+	AccountType string            `json:"accountType" validate:"required,oneof=premium basic enterprise"`
+	IsVerified  bool              `json:"isVerified"`
+	Balance     float64           `json:"balance" validate:"gte=0"`
+	CreatedAt   time.Time         `json:"createdAt" validate:"required"`
+	Events      []EventRecordGofi `json:"events" validate:"required,min=1,max=100"`
+	Metadata    map[string]string `json:"metadata" validate:"omitempty,max=10"`
+}
+
 // ----- Generators -----
 
 func GenerateLargeData() []LargePayload {
@@ -128,4 +151,27 @@ func GenerateLargeDataValidate() []LargePayloadValidate {
 		}
 	}
 	return largeDataValidate
+}
+
+// GenerateLargeDataGofi returns GenerateLargeDataValidate's data as Gofi types.
+func GenerateLargeDataGofi() []LargePayloadGofi {
+	src := GenerateLargeDataValidate()
+	out := make([]LargePayloadGofi, len(src))
+	for i, p := range src {
+		events := make([]EventRecordGofi, len(p.Events))
+		for j, e := range p.Events {
+			events[j] = EventRecordGofi(e)
+		}
+		out[i] = LargePayloadGofi{
+			ID:          p.ID,
+			UserID:      p.UserID,
+			AccountType: p.AccountType,
+			IsVerified:  p.IsVerified,
+			Balance:     p.Balance,
+			CreatedAt:   p.CreatedAt,
+			Events:      events,
+			Metadata:    p.Metadata,
+		}
+	}
+	return out
 }

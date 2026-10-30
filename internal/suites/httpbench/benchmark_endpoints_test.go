@@ -54,7 +54,7 @@ type LargePayloadSchema struct {
 
 type LargeValidateSchema struct {
 	Request struct {
-		Body []utils.LargePayloadValidate
+		Body []utils.LargePayloadGofi
 	}
 	Ok struct {
 		Body string
@@ -114,7 +114,7 @@ type SmallValidateResponseSchema struct {
 
 type LargeValidateResponseSchema struct {
 	Ok struct {
-		Body []utils.LargePayloadValidate
+		Body []utils.LargePayloadGofi
 	}
 }
 
@@ -125,7 +125,7 @@ func setupBenchmarkRouter() gofi.Router {
 	}
 
 	largeData := utils.GenerateLargeData()
-	largeDataValidate := utils.GenerateLargeDataValidate()
+	largeDataValidate := utils.GenerateLargeDataGofi()
 
 	mux := gofi.NewRouter()
 
@@ -404,7 +404,7 @@ func TestBenchmarkEndpoints_JSONValidate(t *testing.T) {
 	})
 
 	t.Run("JSON Validate Large (Valid)", func(t *testing.T) {
-		largeDataValidate := utils.GenerateLargeDataValidate()
+		largeDataValidate := utils.GenerateLargeDataGofi()
 		b, _ := json.Marshal(largeDataValidate)
 
 		ctx := doRequest(mux, "POST", "/json-validate-large", "application/json", b)
@@ -413,7 +413,7 @@ func TestBenchmarkEndpoints_JSONValidate(t *testing.T) {
 	})
 
 	t.Run("JSON Bind And Validate Large (Valid)", func(t *testing.T) {
-		largeDataValidate := utils.GenerateLargeDataValidate()
+		largeDataValidate := utils.GenerateLargeDataGofi()
 		b, _ := json.Marshal(largeDataValidate)
 
 		ctx := doRequest(mux, "POST", "/json-bind-validate-large", "application/json", b)
@@ -422,7 +422,7 @@ func TestBenchmarkEndpoints_JSONValidate(t *testing.T) {
 	})
 
 	t.Run("JSON Validate Large (Validation Failure)", func(t *testing.T) {
-		largeDataValidate := utils.GenerateLargeDataValidate()
+		largeDataValidate := utils.GenerateLargeDataGofi()
 		largeDataValidate[0].AccountType = "invalid"
 		b, _ := json.Marshal(largeDataValidate)
 
@@ -432,7 +432,7 @@ func TestBenchmarkEndpoints_JSONValidate(t *testing.T) {
 	})
 
 	t.Run("JSON Bind And Validate Large (Late Deep Failure)", func(t *testing.T) {
-		largeDataValidate := utils.GenerateLargeDataValidate()
+		largeDataValidate := utils.GenerateLargeDataGofi()
 		lastPayload := len(largeDataValidate) - 1
 		lastEvent := len(largeDataValidate[lastPayload].Events) - 1
 		largeDataValidate[lastPayload].Events[lastEvent].Metrics.CPUUsage = 101
@@ -458,7 +458,7 @@ func TestBenchmarkEndpoints_JSONValidate(t *testing.T) {
 		ctx := doRequest(mux, "GET", "/json-response-validate-large", "", nil)
 		assert.Equal(t, 200, ctx.Response.StatusCode())
 
-		var decoded []utils.LargePayloadValidate
+		var decoded []utils.LargePayloadGofi
 		err := json.Unmarshal(ctx.Response.Body(), &decoded)
 		assert.NoError(t, err)
 		assert.Len(t, decoded, 50)

@@ -6,7 +6,6 @@ import (
 	"example.com/projectsvc/internal/apperr"
 	"example.com/projectsvc/internal/domain"
 	"example.com/projectsvc/internal/http/deps"
-	"example.com/projectsvc/internal/http/middleware"
 	"example.com/projectsvc/internal/http/schemas"
 )
 
@@ -25,7 +24,7 @@ var CreateProjectHandler = gofi.DefineHandler(gofi.RouteOptions{
 			return apperr.Wrap(1793299514301, apperr.InvalidInput, err)
 		}
 
-		caller, _ := middleware.GetPrincipal(c)
+		caller, _ := domain.PrincipalFrom(c.Context())
 		project, err := deps.MustGet(c).Projects().Create(c.Context(), domain.Project{
 			Name:    s.Request.Body.Name,
 			OwnerID: caller.UserID,

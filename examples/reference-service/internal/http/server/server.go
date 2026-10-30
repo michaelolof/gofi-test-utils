@@ -7,6 +7,7 @@ import (
 	"log/slog"
 
 	"github.com/michaelolof/gofi"
+	"github.com/michaelolof/gofi/fluid"
 	gofimw "github.com/michaelolof/gofi/middleware"
 
 	"example.com/projectsvc/internal/http/deps"
@@ -54,9 +55,17 @@ func New(args Args) (*Server, error) {
 }
 
 // DocsOptions describes the API for the docs UI and the spec export tool.
+// Every route requires BearerAuth unless its Info.Security says otherwise.
 func DocsOptions() gofi.DocsOptions {
 	return gofi.DocsOptions{
 		Info: gofi.DocsInfoOptions{Title: "Projects API", Version: "1.0.0"},
+		SecuritySchemes: map[string]any{
+			"BearerAuth": fluid.BearerAuth(
+				fluid.WithBearerFormat(""),
+				fluid.WithSecurityDescription("Opaque access token issued to the caller."),
+			),
+		},
+		Security: []gofi.SecurityRequirement{{"BearerAuth": nil}},
 		Views: []gofi.DocsView{
 			{RoutePrefix: "/docs", Template: gofi.StopLight()},
 		},

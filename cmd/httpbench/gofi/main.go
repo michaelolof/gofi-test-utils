@@ -52,7 +52,7 @@ type LargePayloadSchema struct {
 
 type LargeValidateSchema struct {
 	Request struct {
-		Body []utils.LargePayloadValidate
+		Body []utils.LargePayloadGofi
 	}
 	Ok struct {
 		Body string
@@ -82,7 +82,7 @@ type SmallValidateResponseSchema struct {
 
 type LargeValidateResponseSchema struct {
 	Ok struct {
-		Body []utils.LargePayloadValidate
+		Body []utils.LargePayloadGofi
 	}
 }
 
@@ -234,7 +234,7 @@ func main() {
 		},
 	})
 	largeData := utils.GenerateLargeData()
-	largeDataValidate := utils.GenerateLargeDataValidate()
+	largeDataValidate := utils.GenerateLargeDataGofi()
 
 	mux.Post("/json-large", gofi.RouteOptions{
 		Schema: &LargePayloadSchema{},

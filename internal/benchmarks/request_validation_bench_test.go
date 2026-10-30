@@ -19,7 +19,7 @@ type requestLargeBindSchema struct {
 
 type requestLargeValidateSchema struct {
 	Request struct {
-		Body []utils.LargePayloadValidate `validate:"required,min=1,max=100"`
+		Body []utils.LargePayloadGofi `validate:"required,min=1,max=100"`
 	}
 }
 
@@ -150,8 +150,8 @@ func requestLargeBindData() []utils.LargePayload {
 	return data
 }
 
-func requestLargeValidateData() []utils.LargePayloadValidate {
-	data := utils.GenerateLargeDataValidate()
+func requestLargeValidateData() []utils.LargePayloadGofi {
+	data := utils.GenerateLargeDataGofi()
 	for i := range data {
 		data[i].ID = fmt.Sprintf("00000000-0000-4000-8000-%012x", i+1)
 		data[i].CreatedAt = requestBenchmarkTimestamp

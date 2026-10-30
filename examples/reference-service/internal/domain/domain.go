@@ -38,6 +38,19 @@ type Principal struct {
 	UserID string
 }
 
+type principalKey struct{}
+
+// WithPrincipal returns ctx carrying the authenticated caller.
+func WithPrincipal(ctx context.Context, p Principal) context.Context {
+	return context.WithValue(ctx, principalKey{}, p)
+}
+
+// PrincipalFrom returns the caller stored by WithPrincipal.
+func PrincipalFrom(ctx context.Context) (Principal, bool) {
+	p, ok := ctx.Value(principalKey{}).(Principal)
+	return p, ok
+}
+
 type Authenticator interface {
 	Authenticate(ctx context.Context, token string) (Principal, error)
 }

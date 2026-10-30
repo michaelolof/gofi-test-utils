@@ -8,7 +8,6 @@ import (
 	"example.com/projectsvc/internal/apperr"
 	"example.com/projectsvc/internal/domain"
 	"example.com/projectsvc/internal/http/deps"
-	"example.com/projectsvc/internal/http/middleware"
 	"example.com/projectsvc/internal/http/schemas"
 )
 
@@ -28,7 +27,7 @@ var CreateAPIKeyHandler = gofi.DefineHandler(gofi.RouteOptions{
 		}
 
 		d := deps.MustGet(c)
-		caller, _ := middleware.GetPrincipal(c)
+		caller, _ := domain.PrincipalFrom(c.Context())
 		if _, err := d.Projects().Get(c.Context(), caller.UserID, s.Request.Path.ProjectID); errors.Is(err, domain.ErrNotFound) {
 			return apperr.Wrap(1793299514402, apperr.NotFound, err).WithMsg("project not found")
 		} else if err != nil {
