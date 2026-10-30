@@ -1,4 +1,4 @@
-.PHONY: all bench httpbench sync clean
+.PHONY: all bench httpbench sync clean reference
 
 all: bench httpbench sync
 
@@ -13,6 +13,10 @@ httpbench:
 sync:
 	@echo "Syncing benchmark reports..."
 	@python3 ./scripts/sync_reports.py
+
+reference:
+	@echo "Testing the reference service..."
+	@cd examples/reference-service && go vet ./... && go test ./...
 
 clean:
 	@echo "Cleaning up..."
