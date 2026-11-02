@@ -27,7 +27,7 @@ var GetProjectHandler = gofi.DefineHandler(gofi.RouteOptions{
 		}
 
 		caller, _ := domain.PrincipalFrom(c.Context())
-		project, err := deps.MustGet(c).Projects().Get(c.Context(), caller.UserID, s.Request.Path.ProjectID)
+		project, err := deps.MustGet(c).Projects().Get(c.Context(), caller.UserID, string(s.Request.Path.ProjectID))
 		if errors.Is(err, domain.ErrNotFound) {
 			return apperr.Wrap(1793299514312, apperr.NotFound, err).WithMsg("project not found")
 		}
@@ -44,7 +44,7 @@ type getProjectSchema struct {
 	Request struct {
 		Header schemas.AuthHeader
 		Path   struct {
-			ProjectID string `json:"project_id" validate:"required" example:"prj_01J9Z3"`
+			ProjectID schemas.ProjectID `json:"project_id" validate:"required" spec:"project-id" example:"prj_01J9Z3"`
 		}
 	}
 

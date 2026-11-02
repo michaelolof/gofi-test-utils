@@ -29,7 +29,20 @@ func TestGetProjectHandler_ReturnsCallersProject(t *testing.T) {
 
 	var out schemas.SuccessBody[schemas.Project]
 	require.NoError(t, resp.BindBody(&out))
-	assert.Equal(t, project.ID, out.Data.ID)
+	assert.Equal(t, schemas.ProjectID(project.ID), out.Data.ID)
+}
+
+func TestGetProjectHandler_MalformedID_Returns400(t *testing.T) {
+	h := testharness.New(t)
+
+	resp, err := h.Test(gofi.TestOptions{
+		Method:  "GET",
+		Path:    "/api/v1/projects/:project_id",
+		Paths:   map[string]string{"project_id": "not-a-project"},
+		Headers: testharness.AuthHeaders("token-alice"),
+	})
+	require.NoError(t, err)
+	require.Equal(t, 400, resp.Code(), resp.BodyString())
 }
 
 func TestGetProjectHandler_OtherOwner_Returns404(t *testing.T) {

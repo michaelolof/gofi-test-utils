@@ -8,11 +8,13 @@ import (
 
 	"example.com/projectsvc/internal/http/deps"
 	"example.com/projectsvc/internal/http/handlers/projects"
+	"example.com/projectsvc/internal/http/schemas"
 )
 
 // RegisterRoutes registers every route. In a small service the middleware
 // lives in this file and is mounted in one Use call.
 func RegisterRoutes(r gofi.Router, d deps.Deps) {
+	r.RegisterSpec(schemas.ProjectIDSpec)
 	r.Use(
 		requestLogger,
 		requireJSON,

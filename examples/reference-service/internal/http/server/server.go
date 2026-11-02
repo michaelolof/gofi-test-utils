@@ -5,6 +5,7 @@ package server
 import (
 	"context"
 	"log/slog"
+	"time"
 
 	"github.com/michaelolof/gofi"
 	"github.com/michaelolof/gofi/fluid"
@@ -13,6 +14,7 @@ import (
 	"example.com/projectsvc/internal/http/deps"
 	"example.com/projectsvc/internal/http/middleware"
 	"example.com/projectsvc/internal/http/routes"
+	"example.com/projectsvc/internal/http/schemas"
 )
 
 type Args struct {
@@ -27,8 +29,8 @@ type Server struct {
 	addr   string
 }
 
-// New builds the router: dependencies, global middleware, error handler,
-// routes and docs, in that order.
+// New builds the router: limits, specs, dependencies, global middleware, error
+// handler, routes and docs, in that order.
 func New(args Args) (*Server, error) {
 	cors, err := gofimw.CORS(gofimw.CORSConfig{
 		AllowOrigins: args.CORSOrigins,
@@ -39,6 +41,14 @@ func New(args Args) (*Server, error) {
 	}
 
 	r := gofi.NewRouter()
+	r.Configure(gofi.Config{
+		BodyLimit:      4 << 20,
+		ReadTimeout:    30 * time.Second,
+		WriteTimeout:   60 * time.Second,
+		IdleTimeout:    60 * time.Second,
+		MaxConnections: 5000,
+	})
+	r.RegisterSpec(schemas.ProjectIDSpec)
 	deps.Register(r, args.Deps)
 
 	r.Use(gofimw.Recover())

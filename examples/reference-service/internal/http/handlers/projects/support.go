@@ -6,5 +6,5 @@ import (
 )
 
 func toProject(p domain.Project) schemas.Project {
-	return schemas.Project{ID: p.ID, Name: p.Name, CreatedAt: p.CreatedAt}
+	return schemas.Project{ID: schemas.ProjectID(p.ID), Name: p.Name, CreatedAt: p.CreatedAt}
 }
